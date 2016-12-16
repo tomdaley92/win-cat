@@ -1,4 +1,5 @@
 TomCat - v1.0
+Thomas Daley
 
 A simple TCP/IP networking utility for the Windows operating system.
 Inspired by the traditional nc we all know and love.
