@@ -365,12 +365,14 @@ int connect_scan(char *host, int low, int high) {
         return 1;
     }
 
+    /*  Request as many threads as ports. If number of ports is large, 
+    the OS will not guarantee requested number of threads */
     int num_ports = high - low + 1;
     if (DEBUG) fprintf(stderr, "Requesting %d threads.\n", num_ports);
     omp_set_num_threads(num_ports);
 
     int *results = new int[num_ports];
-    memset(results, 0, num_ports);
+    memset(results, 0, num_ports * sizeof(int));
 
     char **service = new char*[num_ports];
     for (int i = 0; i < num_ports; i++) {
@@ -398,10 +400,9 @@ int connect_scan(char *host, int low, int high) {
 	    /* Resolve the server address and port */
 	    iResult = getaddrinfo(host, port, &hints, &result);
 	    if ( iResult != 0 ) {
+            /* Unable to resolve host and/or port: do nothing */
 	        if (DEBUG) fprintf(stderr, "Getaddrinfo failed with error: %d\n", iResult);
-	        
 	    } else {
-
 		    /* Attempt to connect to an address until one succeeds */
 		    for(ptr=result; ptr != NULL ;ptr=ptr->ai_next) {	    	
 
@@ -423,9 +424,7 @@ int connect_scan(char *host, int low, int high) {
 		    }  
 	        freeaddrinfo(result);
 	        
-	        if (ConnectSocket == INVALID_SOCKET) {
-		    	results[i-low] = 0;
-		    } else {
+	        if (ConnectSocket != INVALID_SOCKET) {
 		    	results[i-low] = 1;
 		    	reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
 		    }  
