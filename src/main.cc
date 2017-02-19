@@ -22,7 +22,7 @@ tomcat - A very basic implementation for windows of the netcat tool we all know 
 
 const char *title = "TomCat - v1.01\n";
 
-const char *about = "A simple TCP/IP networking utility for the Windows operating system.\n"
+const char *about = "A simple TCP/IP network debugging utility for the Windows operating system.\n"
 					"Inspired by the traditional nc we all know and love.\n";
 
 const char *usage = "usage: tomcat [-lkszh] [--e filename] [--c string] [host] [port]\n";
