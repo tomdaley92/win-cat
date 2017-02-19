@@ -20,7 +20,7 @@ tomcat - A very basic implementation for windows of the netcat tool we all know 
 
 #define DEBUG 0
 
-const char *title = "TomCat - v1.0\n";
+const char *title = "TomCat - v1.01\n";
 
 const char *about = "A simple TCP/IP networking utility for the Windows operating system.\n"
 					"Inspired by the traditional nc we all know and love.\n";
