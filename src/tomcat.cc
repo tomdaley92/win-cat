@@ -24,6 +24,7 @@ TomCat::TomCat(char *filename) {
 }
 
 TomCat::~TomCat() {	
+	free(filename);
     close_pipes(pipes);
     _setmode(fileno(stdout), _O_TEXT);
 }
@@ -81,7 +82,7 @@ int TomCat::Process(SOCKET ClientSocket) {
    	memset(sendbuf, '\0', DEFAULT_BUFLEN);
    	
 	/* Main run-forever loop: */
-    while(1) {
+    for(;;) {
 
 		FD_ZERO(&readfds);
 		FD_ZERO(&writefds);

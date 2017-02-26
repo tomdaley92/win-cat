@@ -79,7 +79,7 @@ int server(char *port, char *filename, int keep_listening) {
 
     if (keep_listening) {
 
-        while (1) {
+        for (;;) {
 
             ClientSocket = accept(ListenSocket, NULL, NULL);
             if (ClientSocket == INVALID_SOCKET) {

@@ -163,20 +163,19 @@ int ping_host(char *host, int timeout, int *latency, char *info) {
     if (hIcmpFile == INVALID_HANDLE_VALUE) {
         if (DEBUG) {
         	fprintf(stderr, "\tUnable to open handle.\n");
-        	fprintf(stderr, "IcmpCreatefile returned error: %ld\n", GetLastError() );
+        	fprintf(stderr, "IcmpCreatefile returned error: %ld\n", GetLastError());
         }
         return 1;
     }    
 
     ReplySize = sizeof(ICMP_ECHO_REPLY) + sizeof(SendData);
     ReplyBuffer = (VOID*) malloc(ReplySize);
-    if (ReplyBuffer == NULL) {
-        if (DEBUG) fprintf(stderr, "\tUnable to allocate memory\n");
-        return 1;
-    }    
     
     dwRetVal = IcmpSendEcho(hIcmpFile, ipaddr, SendData, sizeof(SendData), 
         NULL, ReplyBuffer, ReplySize, timeout);
+
+    int return_code = 0;
+
     if (dwRetVal != 0) {
         PICMP_ECHO_REPLY pEchoReply = (PICMP_ECHO_REPLY)ReplyBuffer;
         struct in_addr ReplyAddr;
@@ -184,12 +183,14 @@ int ping_host(char *host, int timeout, int *latency, char *info) {
         
         *latency = pEchoReply->RoundTripTime;
         reverse_dns_lookup(info, host);
-    }
-    else {
+    } else {
  		/* ICMP echo request failed */
-        return 1;
+        
+        return_code = 1;;
     }
-	return 0;
+
+    free(ReplyBuffer);
+	return return_code;
 }
 
 int send_arp(char *dest, char *dotted) {
@@ -208,6 +209,10 @@ int send_arp(char *dest, char *dotted) {
     if (DEBUG) fprintf(stderr, "Sending ARP request for IP address: %s\n", dotted);
 
     dwRetVal = SendARP(DestIp, SrcIp, &MacAddr, &PhysAddrLen);
+
+    if (dwRetVal == ERROR_BAD_NET_NAME) {
+        if (DEBUG) fprintf(stderr, "Error: Cannot send Arp request to a network on different subnet\n");
+    }
 
     if (dwRetVal == NO_ERROR) {
         bPhysAddr = (BYTE *) & MacAddr;
@@ -241,7 +246,7 @@ void display_ping_result(char *host, char *result, int latency) {
 	if (!send_arp(mac, host)) {
 		fprintf(stdout, "\tMAC: %s", mac);
 	}
-	*/ 
+	*/
 	fprintf(stdout, "\n");
 }
 
