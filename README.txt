@@ -1,6 +1,6 @@
 TomCat - v1.02
 
-A simple TCP/IP network debugging utility for the Windows.
+A simple TCP/IP network debugging utility for Windows.
 Inspired by the traditional nc we all know and love.
 
 usage: tomcat [-lkszh] [--e filename] [--c string] [host] [port]
