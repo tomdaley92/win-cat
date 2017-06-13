@@ -309,15 +309,16 @@ int ping_scan(char *cidr, int timeout) {
 		}
 
 		unsigned long num_hosts =  pow(2, host_bits);
-		int *ping = new int[num_hosts];
+		
+        int *ping = (int *) malloc(num_hosts * sizeof(int));
 	    memset(ping, 0, sizeof(int) * num_hosts);
 
-	    int *latency = new int[num_hosts];
+        int *latency = (int *) malloc(num_hosts * sizeof(int));
 	    memset(latency, 0, sizeof(int) * num_hosts);
 
-	    char **result = new char*[num_hosts];
+        char **result = (char **) malloc(num_hosts * sizeof(char *));
 	    for (int i = 0; i < num_hosts; i++) {
-	    	result[i] = new char[NI_MAXHOST];
+            result[i] = (char *) malloc(NI_MAXHOST * sizeof(char));
 	    }
 
 	    if (DEBUG) fprintf(stderr, "Requesting %d threads.\n", num_hosts);
@@ -346,6 +347,13 @@ int ping_scan(char *cidr, int timeout) {
 				display_ping_result(host, result[i], latency[i]);
 			}
 		}
+        free(ping);
+        free(latency);
+        for (int i = 0; i < num_hosts; i++) {
+            free(result[i]);
+        }
+        free (result);
+        
 	}
 
 	/* Cleanup */
@@ -376,12 +384,12 @@ int connect_scan(char *host, int low, int high) {
     if (DEBUG) fprintf(stderr, "Requesting %d threads.\n", num_ports);
     omp_set_num_threads(num_ports);
 
-    int *results = new int[num_ports];
+    int *results = (int *) malloc(num_ports * sizeof(int));
     memset(results, 0, num_ports * sizeof(int));
 
-    char **service = new char*[num_ports];
+    char **service = (char **) malloc(num_ports * sizeof(char *));
     for (int i = 0; i < num_ports; i++) {
-    	service[i] = new char[NI_MAXSERV];
+        service[i] = (char *) malloc(NI_MAXSERV * sizeof(char));
     }
   
   	/* Multithreaded for-loop */
@@ -450,6 +458,11 @@ int connect_scan(char *host, int low, int high) {
 	}
    	
     /* Cleanup */
+    free(results);
+    for (int i = 0; i < num_ports; i++) {
+        free(service[i]);
+    }
+    free(service);
     WSACleanup();
 	return 0;
 }

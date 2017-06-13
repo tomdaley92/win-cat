@@ -77,23 +77,8 @@ int server(char *port, char *filename, int keep_listening) {
     
     TomCat *tomcat = new TomCat(filename);
 
-    if (keep_listening) {
+    do {
 
-        for (;;) {
-
-            ClientSocket = accept(ListenSocket, NULL, NULL);
-            if (ClientSocket == INVALID_SOCKET) {
-                fprintf(stderr, "Accept failed with error: %d\n", WSAGetLastError());
-                closesocket(ListenSocket);
-                WSACleanup();
-                return 1;
-            }
-            
-            tomcat->Process(ClientSocket);
-        }
-    } else { 
-
-        /* Accept a client socket */
         ClientSocket = accept(ListenSocket, NULL, NULL);
         if (ClientSocket == INVALID_SOCKET) {
             fprintf(stderr, "Accept failed with error: %d\n", WSAGetLastError());
@@ -101,9 +86,11 @@ int server(char *port, char *filename, int keep_listening) {
             WSACleanup();
             return 1;
         }
-
+        
         tomcat->Process(ClientSocket);
-    }
+
+    } while (keep_listening);
+
 
     /* No longer need server socket */
     closesocket(ListenSocket);
@@ -117,6 +104,7 @@ int server(char *port, char *filename, int keep_listening) {
     }
         
     /* Cleanup */
+    delete tomcat;
     closesocket(ClientSocket);
     WSACleanup();
 

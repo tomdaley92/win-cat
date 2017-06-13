@@ -37,7 +37,7 @@ build: objects
 	MOVE $(APPNAME).exe bin/$(APPNAME).exe
 
 # Build object files
-objects:	src/*.cc src/*.h
+objects:	src/*.c* src/*.h
 	$(CC) $(CFLAGS) /c $(INCS) $(CFLAGS) src/*.cc	
 
 # Clean any leftover build files and executables

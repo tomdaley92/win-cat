@@ -4,7 +4,7 @@ Thomas Daley
 10/16/2016
 main.cc
 
-tomcat - A very basic implementation for windows of the netcat tool we all know and love.
+tomcat - A minimal windows implementation of the netcat tool.
 
 */
 
@@ -128,12 +128,13 @@ int main(int argc, char **argv) {
 
 		} else if (strcmp(argv[1], "--c") == 0) {
 			
-			static const int len = strlen(argv[2]) + 8;
-			char *command = new char[len];
+			int len = strlen(argv[2]) + 8;
+			char *command = (char *) malloc(len * sizeof(char));
 			memset(command, '\0', len);
 			memcpy(command, "cmd /c ", 7);
 			memcpy(command+7, argv[2], strlen(argv[2]));
 			exit_code = client(argv[3], argv[4], command);
+			free(command);
 
 		} else if (strcmp(argv[1], "-l") == 0 && strcmp(argv[2], "--e") == 0) {
 			
@@ -141,12 +142,13 @@ int main(int argc, char **argv) {
 
 		} else if (strcmp(argv[1], "-l") == 0 && strcmp(argv[2], "--c") == 0) {
 
-			static const int len = strlen(argv[3]) + 8;
-			char *command = new char[len];
+			int len = strlen(argv[3]) + 8;
+			char *command = (char *) malloc(len * sizeof(char));
 			memset(command, '\0', len);
 			memcpy(command, "cmd /c ", 7);
 			memcpy(command+7, argv[3], strlen(argv[3]));
 			exit_code = server(argv[4], command, 0);
+			free(command);
 
 		} else if (strcmp(argv[1], "-lk") == 0 && strcmp(argv[2], "--e") == 0) {
 
@@ -154,12 +156,13 @@ int main(int argc, char **argv) {
 
 		} else if (strcmp(argv[1], "-lk") == 0 && strcmp(argv[2], "--c") == 0) {
 
-			static const int len = strlen(argv[3]) + 8;
-			char *command = new char[len];
+			int len = strlen(argv[3]) + 8;
+			char *command = (char *) malloc(len * sizeof(char));
 			memset(command, '\0', len);
 			memcpy(command, "cmd /c ", 7);
 			memcpy(command+7, argv[3], strlen(argv[3]));
 			exit_code = server(argv[4], command, 1);
+			free(command);
 
 		} else {
 			fprintf(stderr, "%s", usage);

@@ -87,6 +87,7 @@ int client(char *host, char *port, char *filename) {
     }
    	
     /* Cleanup */
+    delete tomcat;
     closesocket(ConnectSocket);
     WSACleanup();
 
