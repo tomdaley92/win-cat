@@ -26,13 +26,13 @@ usage: tomcat [-lkszh] [--e filename] [--c string] [host] [port]
 
    --c  : Specify commands to pass to "cmd /c" for
           execution. It is an error to use this option
-          with -e, -s, or -z.
+          with --e, -s, or -z.
           e.g.    host A (10.0.0.2): tomcat -l --c whoami 8118
                   host B (10.0.0.3): tomcat 10.0.0.2 8118
 
    --e  : Specify filename to execute after connect
           (use with caution). It is an error to use this
-          option with -c, -s, or -z.
+          option with --c, -s, or -z.
           e.g.    host A (10.0.0.2): tomcat -lk --e cmd 8118
                   host B (10.0.0.3): tomcat 10.0.0.2 8118
 
