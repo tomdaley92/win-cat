@@ -15,22 +15,22 @@ tomcat.h
 #include "pipes.h"
 
 class TomCat {
-	
-	private:
-		AsyncStreamReader *input;
-		FILE *output;
-		struct PipeHandles pipes;
-		int launched;
-		char *filename;
+    
+    private:
+        AsyncStreamReader *input;
+        FILE *output;
+        struct PipeHandles pipes;
+        int launched;
+        char *filename;
 
-		int Launch();
-		
+        int Launch();
+        
 
-	public:
-		TomCat(char *filename);
-		~TomCat();
-		int Process(SOCKET ClientSocket);
-		
+    public:
+        TomCat(char *filename);
+        ~TomCat();
+        int Process(SOCKET ClientSocket);
+        
 };
 
 #endif

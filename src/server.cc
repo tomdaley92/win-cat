@@ -15,8 +15,8 @@ server.cc
 
 int server(char *port, char *filename, int keep_listening) {
 
-	WSADATA wsaData;
-	int iResult;
+    WSADATA wsaData;
+    int iResult;
 
     SOCKET ListenSocket = INVALID_SOCKET;
     SOCKET ClientSocket = INVALID_SOCKET;

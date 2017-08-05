@@ -15,7 +15,7 @@ scan.cc
 #define DEBUG 0
 
 int reverse_service_lookup(char *result, char *dotted_ip, int port) {
-	WSADATA wsaData = {0};
+    WSADATA wsaData = {0};
     int iResult = 0;
 
     DWORD dwRetval;
@@ -72,39 +72,39 @@ int reverse_dns_lookup(char *result, char *dotted_ip) {
 }
 
 int long_to_dotted_ipv4(char *dest, unsigned long ip_addr) {
-	/* Helper debug function */
-	int a;
-	int b;
-	int c;
-	int d;
+    /* Helper debug function */
+    int a;
+    int b;
+    int c;
+    int d;
 
-	a = ip_addr & 0xFF;
-	ip_addr = ip_addr >> 8;
-	b = ip_addr & 0xFF;
-	ip_addr = ip_addr >> 8;
-	c = ip_addr & 0xFF;
-	ip_addr = ip_addr >> 8;
-	d = ip_addr & 0xFF;
+    a = ip_addr & 0xFF;
+    ip_addr = ip_addr >> 8;
+    b = ip_addr & 0xFF;
+    ip_addr = ip_addr >> 8;
+    c = ip_addr & 0xFF;
+    ip_addr = ip_addr >> 8;
+    d = ip_addr & 0xFF;
 
-	sprintf(dest, "%d.%d.%d.%d", a, b, c, d);
-	return 0;
+    sprintf(dest, "%d.%d.%d.%d", a, b, c, d);
+    return 0;
 }
 
 
 char *get_dotted_ipv4(char *hostname) {
 
-	char *ip = NULL;
-	int iRetval;
-	DWORD dwRetval;
+    char *ip = NULL;
+    int iRetval;
+    DWORD dwRetval;
 
-	struct addrinfo *result = NULL;
+    struct addrinfo *result = NULL;
     struct addrinfo *ptr = NULL;
     struct addrinfo hints;
 
-	struct sockaddr_in  *sockaddr_ipv4;
-	struct sockaddr_in6  *sockaddr_ipv6;
+    struct sockaddr_in  *sockaddr_ipv4;
+    struct sockaddr_in6  *sockaddr_ipv6;
 
-	char ipstringbuffer[46];
+    char ipstringbuffer[46];
     DWORD ipbufferlength = 46;
 
     ZeroMemory( &hints, sizeof(hints) );
@@ -116,7 +116,7 @@ char *get_dotted_ipv4(char *hostname) {
     dwRetval = getaddrinfo(hostname, "echo", &hints, &result);
     if ( dwRetval != 0 ) {
         if (DEBUG) fprintf(stderr, "getaddrinfo failed with error: %d\n", dwRetval);
-		fprintf(stderr, "Unable to resolve host.\n");      
+        fprintf(stderr, "Unable to resolve host.\n");      
         return NULL;
     }
 
@@ -135,7 +135,7 @@ char *get_dotted_ipv4(char *hostname) {
             case AF_INET6:
                 sockaddr_ipv6 = (struct sockaddr_in6 *) ptr->ai_addr; 
                 if (DEBUG) fprintf(stderr, "IPv6 address %s\n", 
-                	InetNtop(AF_INET6, &sockaddr_ipv6->sin6_addr, ipstringbuffer, 46));
+                    InetNtop(AF_INET6, &sockaddr_ipv6->sin6_addr, ipstringbuffer, 46));
                 break;
             case AF_NETBIOS:
                 if (DEBUG) fprintf(stderr, "AF_NETBIOS (NetBIOS)\n");
@@ -145,12 +145,12 @@ char *get_dotted_ipv4(char *hostname) {
                 break;
         }
     }
-	return ip;
+    return ip;
 }
 
 int ping_host(char *host, int timeout, int *latency, char *info) {
-	
-	HANDLE hIcmpFile;
+    
+    HANDLE hIcmpFile;
     unsigned long ipaddr = INADDR_NONE;
     DWORD dwRetVal = 0;
     char SendData[32] = "Data Buffer";
@@ -162,8 +162,8 @@ int ping_host(char *host, int timeout, int *latency, char *info) {
     hIcmpFile = IcmpCreateFile();
     if (hIcmpFile == INVALID_HANDLE_VALUE) {
         if (DEBUG) {
-        	fprintf(stderr, "\tUnable to open handle.\n");
-        	fprintf(stderr, "IcmpCreatefile returned error: %ld\n", GetLastError());
+            fprintf(stderr, "\tUnable to open handle.\n");
+            fprintf(stderr, "IcmpCreatefile returned error: %ld\n", GetLastError());
         }
         return 1;
     }    
@@ -184,18 +184,18 @@ int ping_host(char *host, int timeout, int *latency, char *info) {
         *latency = pEchoReply->RoundTripTime;
         reverse_dns_lookup(info, host);
     } else {
- 		/* ICMP echo request failed */
+        /* ICMP echo request failed */
         
         return_code = 1;;
     }
 
     free(ReplyBuffer);
-	return return_code;
+    return return_code;
 }
 
 int send_arp(char *dest, char *dotted) {
 
-	DWORD dwRetVal;
+    DWORD dwRetVal;
     IPAddr DestIp = inet_addr(dotted);
     IPAddr SrcIp = 0;       /* default for src ip */
     ULONG MacAddr[2];       /* for 6-byte hardware addresses */
@@ -222,7 +222,7 @@ int send_arp(char *dest, char *dotted) {
                     sprintf(dest, "%.2X", (int) bPhysAddr[i]);
                 else
                     sprintf(dest, "%.2X-", (int) bPhysAddr[i]);
-                	dest = dest + 3;
+                    dest = dest + 3;
             }
             return 0;
         } else {
@@ -233,28 +233,28 @@ int send_arp(char *dest, char *dotted) {
 }
 
 void display_ping_result(char *host, char *result, int latency) {
-	
-	if (strcmp(host, result) != 0) {
-		fprintf(stdout, "Reply (%ld ms) from %s (%s)", latency, result, host);
-	} else {
-		fprintf(stdout, "Reply (%ld ms) from %s", latency, host);
-	}
+    
+    if (strcmp(host, result) != 0) {
+        fprintf(stdout, "Reply (%ld ms) from %s (%s)", latency, result, host);
+    } else {
+        fprintf(stdout, "Reply (%ld ms) from %s", latency, host);
+    }
 
-	/* Send Arp requests */
-	/*
-	char mac[1024];
-	if (!send_arp(mac, host)) {
-		fprintf(stdout, "\tMAC: %s", mac);
-	}
-	*/
-	fprintf(stdout, "\n");
+    /* Send Arp requests */
+    /*
+    char mac[1024];
+    if (!send_arp(mac, host)) {
+        fprintf(stdout, "\tMAC: %s", mac);
+    }
+    */
+    fprintf(stdout, "\n");
 }
 
 int ping_scan(char *cidr, int timeout) {
 
-	WSADATA wsaData;
-	int iResult;
-	
+    WSADATA wsaData;
+    int iResult;
+    
     /* Initialize Winsock */
     iResult = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (iResult != 0) {
@@ -266,87 +266,87 @@ int ping_scan(char *cidr, int timeout) {
     char *dotted_ip = get_dotted_ipv4(hostname);
 
     if (dotted_ip == NULL) {
- 		/* Failure */
-    	return 1;
+        /* Failure */
+        return 1;
     }
 
-	unsigned long ip = inet_addr(dotted_ip);
-	char *network_bits = strtok(NULL, "/\\");
+    unsigned long ip = inet_addr(dotted_ip);
+    char *network_bits = strtok(NULL, "/\\");
 
-	if (network_bits == NULL) {
-		/* User supplied ip IS NOT using CIDR notation */
-		
-		char host[NI_MAXHOST];
-		long_to_dotted_ipv4(host, ip);
-		int latency = 0;
+    if (network_bits == NULL) {
+        /* User supplied ip IS NOT using CIDR notation */
+        
+        char host[NI_MAXHOST];
+        long_to_dotted_ipv4(host, ip);
+        int latency = 0;
 
-		/* Print result */
-		char result[NI_MAXHOST];
-		if (!ping_host(host, timeout, &latency, result)) {
-			display_ping_result(host, result, latency);
-		}
+        /* Print result */
+        char result[NI_MAXHOST];
+        if (!ping_host(host, timeout, &latency, result)) {
+            display_ping_result(host, result, latency);
+        }
 
-	} else {
-		/* User supplied ip IS using CIDR notation */
-		
-		int host_bits = 32 - atoi(network_bits);
-		if (host_bits < 0 || host_bits > 32 ) {
-			fprintf(stderr, "Invalid CIDR notation.\n");
-			return 1;
-		}
+    } else {
+        /* User supplied ip IS using CIDR notation */
+        
+        int host_bits = 32 - atoi(network_bits);
+        if (host_bits < 0 || host_bits > 32 ) {
+            fprintf(stderr, "Invalid CIDR notation.\n");
+            return 1;
+        }
 
-		unsigned long subnet_mask = (0xFFFFFFFF >> host_bits);
-		unsigned long network = ip & subnet_mask;
+        unsigned long subnet_mask = (0xFFFFFFFF >> host_bits);
+        unsigned long network = ip & subnet_mask;
 
-		if (DEBUG) {
-			char subnet_mask_str[NI_MAXHOST];
-			char network_str[NI_MAXHOST];
+        if (DEBUG) {
+            char subnet_mask_str[NI_MAXHOST];
+            char network_str[NI_MAXHOST];
 
-			long_to_dotted_ipv4(subnet_mask_str, subnet_mask);
-			long_to_dotted_ipv4(network_str, network);
+            long_to_dotted_ipv4(subnet_mask_str, subnet_mask);
+            long_to_dotted_ipv4(network_str, network);
 
-			fprintf(stderr, "Subnet Mask: %s\nNetwork: %s\n", subnet_mask_str, network_str);
-		}
+            fprintf(stderr, "Subnet Mask: %s\nNetwork: %s\n", subnet_mask_str, network_str);
+        }
 
-		unsigned long num_hosts =  pow(2, host_bits);
-		
+        unsigned long num_hosts =  pow(2, host_bits);
+        
         int *ping = (int *) malloc(num_hosts * sizeof(int));
-	    memset(ping, 0, sizeof(int) * num_hosts);
+        memset(ping, 0, sizeof(int) * num_hosts);
 
         int *latency = (int *) malloc(num_hosts * sizeof(int));
-	    memset(latency, 0, sizeof(int) * num_hosts);
+        memset(latency, 0, sizeof(int) * num_hosts);
 
         char **result = (char **) malloc(num_hosts * sizeof(char *));
-	    for (int i = 0; i < num_hosts; i++) {
+        for (int i = 0; i < num_hosts; i++) {
             result[i] = (char *) malloc(NI_MAXHOST * sizeof(char));
-	    }
+        }
 
-	    if (DEBUG) fprintf(stderr, "Requesting %d threads.\n", num_hosts);
-	    omp_set_num_threads(num_hosts);
+        if (DEBUG) fprintf(stderr, "Requesting %d threads.\n", num_hosts);
+        omp_set_num_threads(num_hosts);
 
-	    /* Multithreaded for-loop */
-	    #pragma omp parallel for 
-		for (int i = 0; i < num_hosts; i++) {
-			
-			unsigned long current = network | (i << (32 - host_bits)); 
-			char host[NI_MAXHOST];
-			long_to_dotted_ipv4(host, current);
+        /* Multithreaded for-loop */
+        #pragma omp parallel for 
+        for (int i = 0; i < num_hosts; i++) {
+            
+            unsigned long current = network | (i << (32 - host_bits)); 
+            char host[NI_MAXHOST];
+            long_to_dotted_ipv4(host, current);
 
-			if (!ping_host(host, timeout, &latency[i], &result[i][0])) {
-				ping[i] = 1;
-			}
-		}
+            if (!ping_host(host, timeout, &latency[i], &result[i][0])) {
+                ping[i] = 1;
+            }
+        }
 
-		/* Print results */
-		for (int i = 0; i < num_hosts; i++) {
-			unsigned long current = network | (i << (32 - host_bits)); 
-			char host[NI_MAXHOST];
-			long_to_dotted_ipv4(host, current);
+        /* Print results */
+        for (int i = 0; i < num_hosts; i++) {
+            unsigned long current = network | (i << (32 - host_bits)); 
+            char host[NI_MAXHOST];
+            long_to_dotted_ipv4(host, current);
 
-			if (ping[i]) {
-				display_ping_result(host, result[i], latency[i]);
-			}
-		}
+            if (ping[i]) {
+                display_ping_result(host, result[i], latency[i]);
+            }
+        }
         free(ping);
         free(latency);
         for (int i = 0; i < num_hosts; i++) {
@@ -354,21 +354,21 @@ int ping_scan(char *cidr, int timeout) {
         }
         free (result);
         
-	}
+    }
 
-	/* Cleanup */
+    /* Cleanup */
     WSACleanup();
-	return 0;
+    return 0;
 }
 
 int connect_scan(char *host, int low, int high) {
 
-	if (low < MIN_PORT || high > MAX_PORT) {
-		fprintf(stderr, "Ports must be within the range 1-65535.\n");
-		return 1;
-	}
+    if (low < MIN_PORT || high > MAX_PORT) {
+        fprintf(stderr, "Ports must be within the range 1-65535.\n");
+        return 1;
+    }
 
-	WSADATA wsaData;
+    WSADATA wsaData;
     int iResult;
 
     /* Initialize Winsock */
@@ -392,71 +392,71 @@ int connect_scan(char *host, int low, int high) {
         service[i] = (char *) malloc(NI_MAXSERV * sizeof(char));
     }
   
-  	/* Multithreaded for-loop */
-  	#pragma omp parallel for
-	for (int i = low; i <= high; i++) {
-		
-		char port[6];
-    	sprintf(port, "%d", i);
+    /* Multithreaded for-loop */
+    #pragma omp parallel for
+    for (int i = low; i <= high; i++) {
+        
+        char port[6];
+        sprintf(port, "%d", i);
 
-    	SOCKET ConnectSocket = INVALID_SOCKET;
-    	struct addrinfo *result = NULL,
-	     				*ptr = NULL,
-	                    hints;
+        SOCKET ConnectSocket = INVALID_SOCKET;
+        struct addrinfo *result = NULL,
+                        *ptr = NULL,
+                        hints;
 
 
-    	ZeroMemory( &hints, sizeof(hints) );
-    	hints.ai_family = AF_UNSPEC;
-    	hints.ai_socktype = SOCK_STREAM;
-    	hints.ai_protocol = IPPROTO_TCP;
+        ZeroMemory( &hints, sizeof(hints) );
+        hints.ai_family = AF_UNSPEC;
+        hints.ai_socktype = SOCK_STREAM;
+        hints.ai_protocol = IPPROTO_TCP;
 
-	    /* Resolve the server address and port */
-	    iResult = getaddrinfo(host, port, &hints, &result);
-	    if ( iResult != 0 ) {
+        /* Resolve the server address and port */
+        iResult = getaddrinfo(host, port, &hints, &result);
+        if ( iResult != 0 ) {
             /* Unable to resolve host and/or port: do nothing */
-	        if (DEBUG) fprintf(stderr, "Getaddrinfo failed with error: %d\n", iResult);
-	    } else {
-		    /* Attempt to connect to an address until one succeeds */
-		    for(ptr=result; ptr != NULL ;ptr=ptr->ai_next) {	    	
+            if (DEBUG) fprintf(stderr, "Getaddrinfo failed with error: %d\n", iResult);
+        } else {
+            /* Attempt to connect to an address until one succeeds */
+            for(ptr=result; ptr != NULL ;ptr=ptr->ai_next) {            
 
-		        /* Create a SOCKET for connecting to server */
-		        ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
-		        if (ConnectSocket == INVALID_SOCKET) {
-		            fprintf(stderr, "Socket failed with error: %ld\n", WSAGetLastError());
-		        }
+                /* Create a SOCKET for connecting to server */
+                ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+                if (ConnectSocket == INVALID_SOCKET) {
+                    fprintf(stderr, "Socket failed with error: %ld\n", WSAGetLastError());
+                }
 
-		        /* Connect to server */ 
-		        iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+                /* Connect to server */ 
+                iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
-		        if (iResult == SOCKET_ERROR) {
-		            closesocket(ConnectSocket);
-		            ConnectSocket = INVALID_SOCKET;
-		            continue;
-		        }
-		        break;
-		    }  
-	        freeaddrinfo(result);
-	        
-	        if (ConnectSocket != INVALID_SOCKET) {
-		    	results[i-low] = 1;
-		    	reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
-		    }  
-		}
-		closesocket(ConnectSocket);
-	}
+                if (iResult == SOCKET_ERROR) {
+                    closesocket(ConnectSocket);
+                    ConnectSocket = INVALID_SOCKET;
+                    continue;
+                }
+                break;
+            }  
+            freeaddrinfo(result);
+            
+            if (ConnectSocket != INVALID_SOCKET) {
+                results[i-low] = 1;
+                reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
+            }  
+        }
+        closesocket(ConnectSocket);
+    }
 
-	for (int i = 0; i < num_ports; i++) {
-		
-		if (results[i]) {
-			fprintf(stdout, "Open: %d ", i+low);
-			if (i+low != atoi(service[i])) {
-		    	fprintf(stdout, "(%s)\n", service[i]);
-		    } else {
-		    	fprintf(stdout, "\n");
-		    } 
-		} 
-	}
-   	
+    for (int i = 0; i < num_ports; i++) {
+        
+        if (results[i]) {
+            fprintf(stdout, "Open: %d ", i+low);
+            if (i+low != atoi(service[i])) {
+                fprintf(stdout, "(%s)\n", service[i]);
+            } else {
+                fprintf(stdout, "\n");
+            } 
+        } 
+    }
+    
     /* Cleanup */
     free(results);
     for (int i = 0; i < num_ports; i++) {
@@ -464,5 +464,5 @@ int connect_scan(char *host, int low, int high) {
     }
     free(service);
     WSACleanup();
-	return 0;
+    return 0;
 }

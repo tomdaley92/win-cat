@@ -12,11 +12,11 @@ pipe.h
 #include <stdio.h>
 
 typedef struct PipeHandles {
-	HANDLE Child_Std_IN_Rd = NULL;
-	HANDLE Child_Std_IN_Wr = NULL;
-	HANDLE Child_Std_OUT_Rd = NULL;
-	HANDLE Child_Std_OUT_Wr = NULL;
-	PROCESS_INFORMATION piProcInfo;
+    HANDLE Child_Std_IN_Rd = NULL;
+    HANDLE Child_Std_IN_Wr = NULL;
+    HANDLE Child_Std_OUT_Rd = NULL;
+    HANDLE Child_Std_OUT_Wr = NULL;
+    PROCESS_INFORMATION piProcInfo;
 } PipeHandles, *pPipeHandles;
 
 PipeHandles get_pipes(char *filename);

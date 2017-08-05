@@ -15,7 +15,7 @@ client.cc
 
 int client(char *host, char *port, char *filename) {
 
-	WSADATA wsaData;
+    WSADATA wsaData;
     SOCKET ConnectSocket = INVALID_SOCKET;
     struct addrinfo *result = NULL,
                     *ptr = NULL,
@@ -73,7 +73,7 @@ int client(char *host, char *port, char *filename) {
         return 1;
     }
     
-   	/* Where the magic happens */
+    /* Where the magic happens */
     TomCat *tomcat = new TomCat(filename);
     tomcat->Process(ConnectSocket);
 
@@ -85,11 +85,11 @@ int client(char *host, char *port, char *filename) {
         WSACleanup();
         return 1;
     }
-   	
+    
     /* Cleanup */
     delete tomcat;
     closesocket(ConnectSocket);
     WSACleanup();
 
-	return 0;
+    return 0;
 }
