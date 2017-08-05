@@ -55,7 +55,7 @@ Microsoft's Visual C++ Build Tools
 (vcvarsall/cl/nmake) are assumed to be 
 installed and added to PATH.
 1) Open the command prompt and navigate 
-   to the TomCat/Windows directory.
+   to the TomCat directory.
 2) Type `vcvarsall x86` to load the 
    windows development environment.
 3) Type `nmake`.
