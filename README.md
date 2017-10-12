@@ -9,6 +9,7 @@ Inspired by the traditional nc we all know and love.
 
 ## Usage
     wincat [-lkszh] [--e filename] [--c string] [host] [port]
+    
     -l      Listen for incoming connections. It is an error to
             use this option with a host specified
     -k      Keep listening. Forces wincat to stay listening 
