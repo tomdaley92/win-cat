@@ -112,7 +112,7 @@ char *get_dotted_ipv4(char *hostname) {
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_protocol = IPPROTO_TCP;
 
-    /* port "7" or "echo" for ICMP echo/reply relaying service */
+    /* "echo" for ICMP echo/reply relaying service */
     dwRetval = getaddrinfo(hostname, "echo", &hints, &result);
     if ( dwRetval != 0 ) {
         if (DEBUG) fprintf(stderr, "getaddrinfo failed with error: %d\n", dwRetval);

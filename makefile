@@ -5,10 +5,10 @@
 # Note: Microsoft Visual C++ Build Tools are assumed to be installed and 
 # added to PATH.
 #
-# 1) vcvarsall
+# 1) vcvarsall x86
 # 2) nmake
 
-APPNAME = tomcat
+APPNAME = WinCat
 
 CONSOLE_APP = /SUBSYSTEM:CONSOLE
 GUI_APP = /SUBSYSTEM:WINDOWS

@@ -7,7 +7,7 @@ client.cc
 */
 
 #include "client.h"
-#include "tomcat.h"
+#include "WinCat.h"
 #include <io.h>
 #include <fcntl.h>
 
@@ -74,8 +74,8 @@ int client(char *host, char *port, char *filename) {
     }
     
     /* Where the magic happens */
-    TomCat *tomcat = new TomCat(filename);
-    tomcat->Process(ConnectSocket);
+    WinCat *wincat = new WinCat(filename);
+    wincat->Process(ConnectSocket);
 
     /* Shut down the connection since we're done */
     iResult = shutdown(ConnectSocket, SD_SEND);
@@ -87,7 +87,7 @@ int client(char *host, char *port, char *filename) {
     }
     
     /* Cleanup */
-    delete tomcat;
+    delete wincat;
     closesocket(ConnectSocket);
     WSACleanup();
 

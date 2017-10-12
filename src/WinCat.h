@@ -2,19 +2,19 @@
 
 Thomas Daley
 11/13/2016
-tomcat.h
+wincat.h
 
 */
 
-#ifndef TOMCAT
-#define TOMCAT
+#ifndef WINCAT_H
+#define WINCAT_H
 
 #include <windows.h>
 #include <stdio.h>
 #include "AsyncStreamReader.h"
 #include "pipes.h"
 
-class TomCat {
+class WinCat {
     
     private:
         AsyncStreamReader *input;
@@ -27,8 +27,8 @@ class TomCat {
         
 
     public:
-        TomCat(char *filename);
-        ~TomCat();
+        WinCat(char *filename);
+        ~WinCat();
         int Process(SOCKET ClientSocket);
         
 };

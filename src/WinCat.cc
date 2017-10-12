@@ -2,11 +2,11 @@
 
 Thomas Daley
 11/13/2016
-tomcat.cc
+wincat.cc
 
 */
 
-#include "tomcat.h"
+#include "wincat.h"
 #include "pipes.h"
 #include <windows.h>
 #include <io.h>
@@ -14,7 +14,7 @@ tomcat.cc
 
 #define DEBUG 0
 
-TomCat::TomCat(char *filename) {
+WinCat::WinCat(char *filename) {
     this->filename = NULL;
     if (filename != NULL) {
         this->filename = (char *) malloc((strlen(filename) + 1) * sizeof(char));
@@ -23,14 +23,14 @@ TomCat::TomCat(char *filename) {
     this->launched = 0;
 }
 
-TomCat::~TomCat() { 
+WinCat::~WinCat() { 
     free(filename);
     delete input;
     close_pipes(pipes);
     _setmode(fileno(stdout), _O_TEXT);
 }
 
-int TomCat::Launch() {
+int WinCat::Launch() {
 
     int reader = TEXT_READER;
     if (this->filename == NULL) {
@@ -65,7 +65,7 @@ int TomCat::Launch() {
     return 0;
 }
 
-int TomCat::Process(SOCKET ClientSocket) {
+int WinCat::Process(SOCKET ClientSocket) {
 
     if (!this->launched) {
         Launch();
@@ -151,6 +151,6 @@ int TomCat::Process(SOCKET ClientSocket) {
         }
     }
 
-    if (DEBUG) fprintf(stderr, "Returned from tomcat Process().\n");
+    if (DEBUG) fprintf(stderr, "Returned from wincat Process().\n");
     return 0;
 }

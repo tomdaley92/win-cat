@@ -4,7 +4,7 @@ Thomas Daley
 10/16/2016
 main.cc
 
-tomcat - A minimal windows implementation of the netcat tool.
+WinCat - A minimal windows implementation of the netcat tool.
 
 */
 
@@ -16,22 +16,21 @@ tomcat - A minimal windows implementation of the netcat tool.
 #include <String.h>
 #include <windows.h>
 #include <tchar.h>
-#include "atlstr.h"
 
 #define DEBUG 0
 
-const char *title = "TomCat - v1.02\n";
+const char *title = "WinCat - v1.03\n";
 
 const char *about = "A simple TCP/IP network debugging utility for Windows.\n"
                     "Inspired by the traditional nc we all know and love.\n";
 
-const char *usage = "usage: tomcat [-lkszh] [--e filename] [--c string] [host] [port]\n";
+const char *usage = "usage: wincat [-lkszh] [--e filename] [--c string] [host] [port]\n";
 
 const char *details =
                     "   -l   : Listen for incoming connections. It is an error to\n"
                     "          use this option with a host specified.\n"
                     "\n"
-                    "   -k   : Keep listening. Forces tomcat to stay listening \n"
+                    "   -k   : Keep listening. Forces wincat to stay listening \n"
                     "          for another connection after its current\n"
                     "          connection is completed. It is an error to use\n"
                     "          this option without -l.\n"
@@ -39,25 +38,25 @@ const char *details =
                     "   -s   : Specify host(s) on the network to send ICMP echo\n"
                     "          requests. It is an error to use this option with\n"
                     "          any other options specified.\n"
-                    "          e.g.    tomcat -s 192.168.1.0/24\n"
+                    "          e.g.    wincat -s 192.168.1.0/24\n"
                     "\n"
                     "   -z   : Specify port(s) on the host to scan for listening\n"
                     "          daemons using the connect() call. It is an error\n"
                     "          to use this option with any other options\n"
                     "          specified.\n"
-                    "          e.g.    tomcat -z localhost 1-200\n"
+                    "          e.g.    wincat -z localhost 1-200\n"
                     "\n"
                     "   --c  : Specify commands to pass to \"cmd /c\" for\n"
                     "          execution after connecting. It is an error\n"
                     "          to use this option with --e, -s, or -z.\n"
-                    "          e.g.    host A (10.0.0.2): tomcat -l --c whoami 8118\n"
-                    "                  host B (10.0.0.3): tomcat 10.0.0.2 8118\n"
+                    "          e.g.    host A (10.0.0.2): wincat -l --c whoami 8118\n"
+                    "                  host B (10.0.0.3): wincat 10.0.0.2 8118\n"
                     "\n"
                     "   --e  : Specify filename to execute after connecting\n"
                     "          (use with caution). It is an error to use this\n"
                     "          option with --c, -s, or -z.\n"
-                    "          e.g.    host A (10.0.0.2): tomcat -lk --e cmd 8118\n"
-                    "                  host B (10.0.0.3): tomcat 10.0.0.2 8118\n"
+                    "          e.g.    host A (10.0.0.2): wincat -lk --e cmd 8118\n"
+                    "                  host B (10.0.0.3): wincat 10.0.0.2 8118\n"
                     "\n"
                     "   -h   : Displays this help page, when this option\n"
                     "          is specified.\n"

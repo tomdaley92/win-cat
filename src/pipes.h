@@ -6,8 +6,8 @@ pipe.h
 
 */
 
-#ifndef PIPES
-#define PIPES
+#ifndef PIPES_H
+#define PIPES_H
 
 #include <stdio.h>
 

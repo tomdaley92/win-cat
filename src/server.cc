@@ -7,7 +7,7 @@ server.cc
 */
 
 #include "server.h"
-#include "tomcat.h"
+#include "WinCat.h"
 #include <io.h>
 #include <fcntl.h>
 
@@ -75,7 +75,7 @@ int server(char *port, char *filename, int keep_listening) {
         return 1;
     }
     
-    TomCat *tomcat = new TomCat(filename);
+    WinCat *wincat = new WinCat(filename);
 
     do {
 
@@ -87,7 +87,7 @@ int server(char *port, char *filename, int keep_listening) {
             return 1;
         }
         
-        tomcat->Process(ClientSocket);
+        wincat->Process(ClientSocket);
 
     } while (keep_listening);
 
@@ -104,7 +104,7 @@ int server(char *port, char *filename, int keep_listening) {
     }
         
     /* Cleanup */
-    delete tomcat;
+    delete wincat;
     closesocket(ClientSocket);
     WSACleanup();
 

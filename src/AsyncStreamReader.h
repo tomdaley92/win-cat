@@ -6,8 +6,8 @@ AsyncStreamReader.cc
 
 */
 
-#ifndef ASYNC_STREAM_READER
-#define ASYNC_STREAM_READER 
+#ifndef ASYNC_STREAM_READER_H
+#define ASYNC_STREAM_READER_H
 
 #define DEFAULT_BUFLEN 4096
 
