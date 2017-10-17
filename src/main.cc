@@ -19,7 +19,7 @@ WinCat - A minimal windows implementation of the netcat tool.
 
 #define DEBUG 0
 
-const char *title = "WinCat - v1.03\n";
+const char *title = "WinCat - v1.04\n";
 
 const char *about = "A simple TCP/IP network debugging utility for Windows.\n"
                     "Inspired by the traditional nc we all know and love.\n";
@@ -66,24 +66,23 @@ const char *details =
                     "          notation (IPv4 only) can be used to specify a\n"
                     "          range of hosts.\n"
                     "\n"
-                    "  port  : Port must be single integer. If the -z option\n"
+                    "  port  : Must be single integer. If the -z option\n"
                     "          is specified, a range of ports can be used instead.\n";
                     
 
 int main(int argc, char **argv) {
-    
     int exit_code = 0;
-    int timeout = 1000;
 
     if (argc == 2 && (strcmp(argv[1], "-h") == 0)) {
         fprintf(stdout, "%s\n%s\n%s\n%s",title, about, usage, details);
-        return 0;
+        return exit_code;
     }
 
     if (argc == 3) {
         if (strcmp(argv[1], "-s") == 0) {
 
-            exit_code = ping_scan(argv[2], timeout);
+            // Default ping timeout to 1 second
+            exit_code = ping_scan(argv[2], 1000);
 
         } else if (strcmp(argv[1], "-l") == 0) {
 

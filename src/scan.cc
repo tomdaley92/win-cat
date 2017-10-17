@@ -11,6 +11,7 @@ scan.cc
 #include <stdlib.h>
 #include <math.h>
 #include <Icmpapi.h>
+#include <fcntl.h> // non-blocking sockets
 
 #define DEBUG 0
 
@@ -185,7 +186,6 @@ int ping_host(char *host, int timeout, int *latency, char *info) {
         reverse_dns_lookup(info, host);
     } else {
         /* ICMP echo request failed */
-        
         return_code = 1;;
     }
 
@@ -241,12 +241,11 @@ void display_ping_result(char *host, char *result, int latency) {
     }
 
     /* Send Arp requests */
-    /*
-    char mac[1024];
-    if (!send_arp(mac, host)) {
-        fprintf(stdout, "\tMAC: %s", mac);
-    }
-    */
+    //char mac[18];
+    //if (!send_arp(mac, host)) {
+    //    fprintf(stdout, "\tMAC: %s", mac);
+    //}
+    
     fprintf(stdout, "\n");
 }
 
@@ -391,6 +390,11 @@ int connect_scan(char *host, int low, int high) {
     for (int i = 0; i < num_ports; i++) {
         service[i] = (char *) malloc(NI_MAXSERV * sizeof(char));
     }
+
+    //////
+    fd_set writefds;
+    FD_ZERO(&writefds);
+    //////
   
     /* Multithreaded for-loop */
     #pragma omp parallel for
@@ -421,40 +425,67 @@ int connect_scan(char *host, int low, int high) {
 
                 /* Create a SOCKET for connecting to server */
                 ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
+
                 if (ConnectSocket == INVALID_SOCKET) {
                     fprintf(stderr, "Socket failed with error: %ld\n", WSAGetLastError());
                 }
 
+                
+
+                // attempt to make the socket non-blocking
+                unsigned long mode = 1; // nonzero = non-blocking
+                if (ioctlsocket(ConnectSocket, FIONBIO, &mode)) {
+                    fprintf(stderr, "Failed to set socket mode.\n");
+                }
+
+
                 /* Connect to server */ 
                 iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
-                if (iResult == SOCKET_ERROR) {
-                    closesocket(ConnectSocket);
-                    ConnectSocket = INVALID_SOCKET;
-                    continue;
+
+                fd_set writefds;
+                FD_ZERO(&writefds);
+                FD_SET(ConnectSocket, &writefds);
+
+                struct timeval timeout;
+                timeout.tv_sec = 0;
+                timeout.tv_usec = 250000;
+
+                int rs = select(1, NULL, &writefds, NULL, &timeout);
+                if (FD_ISSET(ConnectSocket, &writefds)) {
+                    results[i-low] = 1;
+                    reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
+                    break;
                 }
-                break;
+
+                //if (iResult == SOCKET_ERROR) {
+                //    closesocket(ConnectSocket);
+                //    ConnectSocket = INVALID_SOCKET;
+                //    continue;
+                //}
+                //break;
+
+
             }  
             freeaddrinfo(result);
-            
-            if (ConnectSocket != INVALID_SOCKET) {
-                results[i-low] = 1;
-                reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
-            }  
+
+            //if (ConnectSocket != INVALID_SOCKET) {
+            //    results[i-low] = 1;
+            //    reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
+            //}  
         }
         closesocket(ConnectSocket);
     }
 
+    /* Check the results */
     for (int i = 0; i < num_ports; i++) {
-        
         if (results[i]) {
             fprintf(stdout, "Open: %d ", i+low);
             if (i+low != atoi(service[i])) {
-                fprintf(stdout, "(%s)\n", service[i]);
-            } else {
-                fprintf(stdout, "\n");
-            } 
-        } 
+                fprintf(stdout, "(%s)", service[i]);
+            }
+            fprintf(stdout, "\n");
+        }
     }
     
     /* Cleanup */

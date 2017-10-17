@@ -1,5 +1,5 @@
 # WinCat
-**v1.03**
+**v1.04**
 
 
 A simple TCP/IP network debugging utility for Windows.

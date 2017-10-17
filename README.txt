@@ -1,4 +1,4 @@
-WinCat - v1.03
+WinCat - v1.04
 
 A simple TCP/IP network debugging utility for Windows.
 Inspired by the traditional nc we all know and love.
