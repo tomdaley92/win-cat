@@ -447,9 +447,10 @@ int connect_scan(char *host, int low, int high) {
                 FD_ZERO(&writefds);
                 FD_SET(ConnectSocket, &writefds);
 
-                struct timeval timeout;
+                // timeouts should be somewhere between 100ms (100000 usec) and 1000ms (1 sec)
+                struct timeval timeout; 
                 timeout.tv_sec = 0;
-                timeout.tv_usec = 250000;
+                timeout.tv_usec = 750000;
 
                 int rs = select(1, NULL, &writefds, NULL, &timeout);
                 if (FD_ISSET(ConnectSocket, &writefds)) {
