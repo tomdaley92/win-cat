@@ -11,7 +11,7 @@ server.cc
 #include <io.h>
 #include <fcntl.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 int server(char *port, char *filename, int keep_listening) {
 
@@ -108,5 +108,6 @@ int server(char *port, char *filename, int keep_listening) {
     closesocket(ClientSocket);
     WSACleanup();
 
+    if (DEBUG) fprintf(stderr, "Returned from server call.\n");
     return 0;
 }

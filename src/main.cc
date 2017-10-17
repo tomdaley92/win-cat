@@ -17,7 +17,7 @@ WinCat - A minimal windows implementation of the netcat tool.
 #include <windows.h>
 #include <tchar.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 const char *title = "WinCat - v1.04\n";
 
@@ -173,5 +173,8 @@ int main(int argc, char **argv) {
     }
     
     if (DEBUG) fprintf(stderr, "Process exited gracefully.\n");
-    ExitProcess(exit_code);
+    //ExitProcess(exit_code);
+
+    // still hangs here!!!
+    return exit_code;
 }

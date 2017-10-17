@@ -28,6 +28,8 @@ WinCat::~WinCat() {
     delete input;
     close_pipes(pipes);
     _setmode(fileno(stdout), _O_TEXT);
+
+    if (DEBUG) fprintf(stderr, "Returned from Wincat destructor.\n");
 }
 
 int WinCat::Launch() {

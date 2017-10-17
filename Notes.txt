@@ -17,4 +17,6 @@ hanging issue (to reproduce) :
     host A: wincat -l 8000
             wincat -l 8001
     host B: nc HOST_A_IP 8000-8001 < some_text_file
-    
+
+    -- seems to be hanging at ExitProcess()
+        -- see msdn's notes about deadlocks caused by this function

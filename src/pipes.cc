@@ -11,7 +11,7 @@ pipe.cc
 #include "atlstr.h"
 #include "pipes.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 PipeHandles get_pipes(char *filename) {
 
@@ -125,28 +125,28 @@ int close_pipes(struct PipeHandles pipes) {
         CloseHandle(pipes.Child_Std_OUT_Wr);
     }
 
-    /* Wait until child process exits */
-    if (pipes.piProcInfo.hProcess != NULL) {
-        if (DEBUG) fprintf(stderr, "Waiting on child process\n");
+    /* Wait until child thread exits */
+    //if (pipes.piProcInfo.hThread != NULL) {
+        //if (DEBUG) fprintf(stderr, "Waiting on child thread\n");
         
-        WaitForSingleObject( pipes.piProcInfo.hProcess, INFINITE );
+       // WaitForSingleObject( pipes.piProcInfo.hThread, INFINITE);
+        //if (!TerminateThread(pipes.piProcInfo.hThread, 0)){
+            //if (DEBUG)fprintf(stderr, "Error: failed to terminate child thread.\n");
+        
+        //}
+        //CloseHandle(pipes.piProcInfo.hThread);
+    //}
+
+    /* Wait until child process exits */
+    //if (pipes.piProcInfo.hProcess != NULL) {
+        //if (DEBUG) fprintf(stderr, "Waiting on child process\n");
+        
+        //WaitForSingleObject( pipes.piProcInfo.hProcess, INFINITE );
         if (!TerminateProcess(pipes.piProcInfo.hProcess, 0)) {
             if (DEBUG) fprintf(stderr, "Error: failed to terminate child process.\n");
         }
-        CloseHandle(pipes.piProcInfo.hProcess);
-    }
-
-    /* Wait until child thread exits */
-    if (pipes.piProcInfo.hThread != NULL) {
-        if (DEBUG) fprintf(stderr, "Waiting on child thread\n");
-        
-        WaitForSingleObject( pipes.piProcInfo.hThread, INFINITE);
-        if (!TerminateThread(pipes.piProcInfo.hThread, 0)){
-            if (DEBUG)fprintf(stderr, "Error: failed to terminate child thread.\n");
-        
-        }
-        CloseHandle(pipes.piProcInfo.hThread);
-    }
+        //CloseHandle(pipes.piProcInfo.hProcess);
+    //}
 
     if (DEBUG) fprintf(stderr, "Done closing pipes.\n");
 
