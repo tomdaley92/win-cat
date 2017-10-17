@@ -1,0 +1,20 @@
+For v1.04
+-----------------------
+
+-a send arp requests
+-w timeout (in milliseconds)
+
+
+
+-- format ping requests better
+-- connect scans
+    - sped up with non-blocking sockets successfully
+-- write a connect() wrapper that takes in a timeout or somethind along those lines...
+-- connecting to clients should be allowed to use a port range
+
+
+hanging issue (to reproduce) :
+    host A: wincat -l 8000
+            wincat -l 8001
+    host B: nc HOST_A_IP 8000-8001 < some_text_file
+    
