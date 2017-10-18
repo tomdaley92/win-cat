@@ -24,19 +24,16 @@ WinCat::WinCat(char *filename) {
 }
 
 WinCat::~WinCat() { 
+    if (filename) close_pipes(pipes);
     free(filename);
     delete input;
-    close_pipes(pipes);
     _setmode(fileno(stdout), _O_TEXT);
-
-    if (DEBUG) fprintf(stderr, "Returned from Wincat destructor.\n");
 }
 
 int WinCat::Launch() {
-
     int reader = TEXT_READER;
-    if (this->filename == NULL) {
 
+    if (this->filename == NULL) {
         if (!_isatty(fileno(stdin)) ) {
             reader = BINARY_READER;
         }
@@ -47,9 +44,9 @@ int WinCat::Launch() {
         this->output = stdout;
 
     } else {
-
+        /* Create a new process */
         this->pipes = get_pipes(this->filename);
-        
+    
         int in_fd = _open_osfhandle((intptr_t)this->pipes.Child_Std_OUT_Rd, _O_BINARY | _O_RDONLY);
         int out_fd = _open_osfhandle((intptr_t)this->pipes.Child_Std_IN_Wr, _O_BINARY | _O_APPEND);
 
@@ -96,12 +93,12 @@ int WinCat::Process(SOCKET ClientSocket) {
         FD_SET(ClientSocket, &exceptfds);
 
         struct timeval timeout;
-        timeout.tv_sec = 5;
+        timeout.tv_sec = 3;
         timeout.tv_usec = 0;
        
         int rs = select(3, &readfds, &writefds, &exceptfds, &timeout);
         if (rs == SOCKET_ERROR) {
-            if (DEBUG) fprintf(stderr, "Select() failed with error: %d\n", WSAGetLastError());
+            if (DEBUG) fprintf(stderr, "Wincat: Select() failed with error: %d\n", WSAGetLastError());
             break;
         }       
 
@@ -114,10 +111,10 @@ int WinCat::Process(SOCKET ClientSocket) {
                 fflush(output);
 
             } else if ( iResult == 0 ) {
-                if (DEBUG) fprintf(stderr, "Connection closed on other end.\n");
+                if (DEBUG) fprintf(stderr, "Wincat: Connection closed on other end.\n");
                 break;
             } else {
-                if (DEBUG) fprintf(stderr, "Recv() failed with error: %d\n", WSAGetLastError());
+                if (DEBUG) fprintf(stderr, "Wincat: Recv() failed with error: %d\n", WSAGetLastError());
                 break;
             }
 
@@ -133,14 +130,14 @@ int WinCat::Process(SOCKET ClientSocket) {
                 iResult = send(ClientSocket, sendbuf, bytes_read, 0);
 
                 if ( iResult == 0 ) {
-                    if (DEBUG) fprintf(stderr, "Connection closed on other end.\n");
+                    if (DEBUG) fprintf(stderr, "Wincat: Connection closed on other end.\n");
                     break;
                 } else if (iResult < 0 ) {
-                    if (DEBUG) fprintf(stderr, "Send() failed with error: %d\n", WSAGetLastError());
+                    if (DEBUG) fprintf(stderr, "Wincat: Send() failed with error: %d\n", WSAGetLastError());
                     break;
                 }
             } else if (bytes_read < 0) {
-                if (DEBUG) fprintf(stderr, "Input reading complete.\n");
+                if (DEBUG) fprintf(stderr, "Wincat: Input reading complete.\n");
                 break;
             }
 
@@ -148,11 +145,10 @@ int WinCat::Process(SOCKET ClientSocket) {
 
         } else if (FD_ISSET(ClientSocket, &exceptfds)) {
             /* SOCKET EXCEPTION */
-            if (DEBUG) fprintf(stderr, "Error: Socket exception.\n");
+            if (DEBUG) fprintf(stderr, "Wincat: Socket exception.\n");
             break;
         }
     }
 
-    if (DEBUG) fprintf(stderr, "Returned from wincat Process().\n");
     return 0;
 }

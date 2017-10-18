@@ -172,9 +172,6 @@ int main(int argc, char **argv) {
         return 1;
     }
     
-    if (DEBUG) fprintf(stderr, "Process exited gracefully.\n");
-    //ExitProcess(exit_code);
-
-    // still hangs here!!!
+    if (DEBUG) fprintf(stderr, "ExitProcess()\n");
     return exit_code;
 }

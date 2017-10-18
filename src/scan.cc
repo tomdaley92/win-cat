@@ -432,16 +432,15 @@ int connect_scan(char *host, int low, int high) {
 
                 
 
-                // attempt to make the socket non-blocking
-                unsigned long mode = 1; // nonzero = non-blocking
-                if (ioctlsocket(ConnectSocket, FIONBIO, &mode)) {
+                /////// attempt to make the socket non-blocking////////
+                unsigned long NON_BLOCKING = 1; // nonzero = non-blocking
+                if (ioctlsocket(ConnectSocket, FIONBIO, &NON_BLOCKING)) {
                     fprintf(stderr, "Failed to set socket mode.\n");
                 }
-
-
+                
                 /* Connect to server */ 
-                iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
-
+                //iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+                connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
                 fd_set writefds;
                 FD_ZERO(&writefds);
@@ -458,6 +457,8 @@ int connect_scan(char *host, int low, int high) {
                     reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
                     break;
                 }
+                ///////////////////////////////////////////////////////
+
 
                 //if (iResult == SOCKET_ERROR) {
                 //    closesocket(ConnectSocket);

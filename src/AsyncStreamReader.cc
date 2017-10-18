@@ -11,7 +11,7 @@ AsyncStreamReader.cc
 #include <fcntl.h>
 #include <io.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 DWORD WINAPI text_reader_thread(LPVOID data) {
     
@@ -31,13 +31,13 @@ DWORD WINAPI text_reader_thread(LPVOID data) {
             ReleaseMutex(p_data->key);
         } 
     } 
-    if (DEBUG) fprintf(stderr, "EOF\n");   
+    if (DEBUG) fprintf(stderr, "AsyncStreamReader: EOF\n");   
 
     if (WaitForSingleObject(p_data->key, INFINITE) == WAIT_OBJECT_0) {
         p_data->flag = 0;
     }
     ReleaseMutex(p_data->key); 
-    if (DEBUG) fprintf(stderr, "Exited text_reader_thread gracefully.\n");
+    if (DEBUG) fprintf(stderr, "AsyncStreamReader: Exit text_reader_thread.\n");
     ExitThread(0);
 }
 
@@ -61,14 +61,13 @@ DWORD WINAPI binary_reader_thread(LPVOID data) {
             ReleaseMutex(p_data->key);
         } 
     }
-    if (DEBUG) fprintf(stderr, "EOF\n"); 
+    if (DEBUG) fprintf(stderr, "AsyncStreamReader: EOF\n"); 
 
     if (WaitForSingleObject(p_data->key, INFINITE) == WAIT_OBJECT_0) {
         p_data->flag = 0;
     }
     ReleaseMutex(p_data->key);      
-    if (DEBUG) fprintf(stderr, "Exited binary_reader_thread gracefully.\n");
-
+    if (DEBUG) fprintf(stderr, "AsyncStreamReader: Exit binary_reader_thread.\n");
     ExitThread(0);
 }
 
@@ -80,7 +79,7 @@ AsyncStreamReader::AsyncStreamReader(FILE *stream, int type) {
     
     data.stream = stream;
     if (data.stream == NULL) {
-        fprintf(stderr, "AsyncStreamReader: stream is NULL.\n");
+        fprintf(stderr, "AsyncStreamReader: Stream is NULL.\n");
         exit(1);
     }
 
@@ -98,7 +97,7 @@ AsyncStreamReader::AsyncStreamReader(FILE *stream, int type) {
     }
 
     if (type == TEXT_READER) {
-        if (DEBUG) fprintf(stderr, "Creating text reader thread\n");
+        if (DEBUG) fprintf(stderr, "AsyncStreamReader: Creating text reader thread.\n");
         T_HANDLE = CreateThread(
             NULL,
             0,
@@ -108,7 +107,7 @@ AsyncStreamReader::AsyncStreamReader(FILE *stream, int type) {
             &T_ID);
     } else if (type == BINARY_READER) { 
         _setmode(fileno(stream), _O_BINARY);
-        if (DEBUG) fprintf(stderr, "Creating binary reader thread\n");
+        if (DEBUG) fprintf(stderr, "AsyncStreamReader: Creating binary reader thread.\n");
         T_HANDLE = CreateThread(
             NULL,
             0,
@@ -128,19 +127,25 @@ AsyncStreamReader::AsyncStreamReader(FILE *stream, int type) {
 }
 
 AsyncStreamReader::~AsyncStreamReader() {
-    
-    if (DEBUG) fprintf(stderr, "AsyncStreamReader destuctor called.\n");
-    
-    if (T_HANDLE != NULL) {
+    if (T_HANDLE) {
         if (!CancelIo(T_HANDLE)){
-            if (DEBUG) fprintf(stderr, "Unable to cancel IO on AsyncStreamReader thread.\n");
+            if (DEBUG) fprintf(stderr, "AsyncStreamReader: Unable to cancel IO on thread.\n");
+        }
+        if (!TerminateThread(T_HANDLE, 0)){
+            if (DEBUG) fprintf(stderr, "AsyncStreamReader: Failed to terminate thread.\n");
         }
 
-        if (!TerminateThread(T_HANDLE, 0)){
-            if (DEBUG) fprintf(stderr, "Failed to terminate AsyncStreamReader thread.\n");
-        }
+        ///////////////////////////////////////
+        // Wait until child thread exits.
+        if (DEBUG) fprintf(stderr, "AsyncStreamReader: Waiting for thread to terminate.\n");
+        WaitForSingleObject( T_HANDLE, INFINITE );
+        ///////////////////////////////////////
+
         CloseHandle(T_HANDLE);
     }
+
+    /* Without releasing ownership, a deadlock can occur when the main thread terminates */
+    if (data.key) ReleaseMutex(data.key);
 }
 
 int AsyncStreamReader::Read(char *dest) {
