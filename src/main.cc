@@ -17,6 +17,7 @@ WinCat - A minimal windows implementation of the netcat tool.
 #include <tchar.h>
 
 #define DEBUG 0
+#define MAX_LINE 1025
 
 const char *title = "WinCat - v1.04\n";
 
@@ -72,105 +73,69 @@ const char *details =
 int main(int argc, char **argv) {
     int exit_code = 0;
 
-    if (argc == 2 && (strcmp(argv[1], "-h") == 0)) {
-        fprintf(stdout, "%s\n%s\n%s\n%s",title, about, usage, details);
-        return exit_code;
-    }
-
-    if (argc == 3) {
-        if (strcmp(argv[1], "-s") == 0) {
-
-            /* Default ping timeout to 1 second */
-            exit_code = ping_scan(argv[2], 1000);
-
-        } else if (strcmp(argv[1], "-l") == 0) {
-
-            exit_code = server(argv[2], NULL, 0);
-
-        } else if (strcmp(argv[1], "-lk") == 0){
-
-            exit_code = server(argv[2], NULL, 1);
-
-        } else {
-
-            exit_code = client(argv[1], argv[2], NULL); 
-        }
-
-    } else if (argc == 4) {
-        if (strcmp(argv[1], "-z") == 0) {
-
-            int low;
-            int high;
-
-            char *start = strtok(argv[3], "-\0");
-            low = atoi(start);
-
-            char *end = strtok(NULL, "-\0");
-            if (end == NULL) {
-                high = low;
+    switch (argc) {
+        case 2:
+            if (!strcmp(argv[1], "-h"))
+                fprintf(stdout, "%s\n%s\n%s\n%s",title, about, usage, details);
+            else 
+                fprintf(stderr, "%s", usage);
+            break;
+        case 3:
+            if (!strcmp(argv[1], "-s")) 
+                exit_code = ping_scan(argv[2], 1000);
+            else if (!strcmp(argv[1], "-l")) 
+                exit_code = server(argv[2], NULL, 0);
+            else if (!strcmp(argv[1], "-lk")) 
+                exit_code = server(argv[2], NULL, 1);
+            else 
+                exit_code = client(argv[1], argv[2], NULL); 
+            break;
+        case 4:
+            if (!strcmp(argv[1], "-z")) {
+                int low;
+                int high;
+                char *start = strtok(argv[3], "-");
+                low = atoi(start);
+                char *end = strtok(NULL, "-");
+                if (end == NULL)  high = low;
+                else high = atoi(end);
+                exit_code = connect_scan(argv[2], low, high, 750);
             } else {
-                high = atoi(end);
+                fprintf(stderr, "%s", usage);
+                exit_code = 1;
             }
-
-            exit_code = connect_scan(argv[2], low, high, 750);
-
-        } else {
+            break;
+        case 5:
+            char command[MAX_LINE];
+            memset(command, '\0', MAX_LINE);
+            if (!strcmp(argv[1], "--e")) 
+                exit_code = client(argv[3], argv[4], argv[2]);
+            else if (!strcmp(argv[1], "--c")) {
+                memcpy(command, "cmd /c ", 7);
+                memcpy(command+7, argv[2], strlen(argv[2]));
+                exit_code = client(argv[3], argv[4], command);
+            } else if (!strcmp(argv[1], "-l") && !strcmp(argv[2], "--e"))
+                exit_code = server(argv[4], argv[3], 0);
+             else if (!strcmp(argv[1], "-l") && !strcmp(argv[2], "--c")) {
+                memcpy(command, "cmd /c ", 7);
+                memcpy(command+7, argv[3], strlen(argv[3]));
+                exit_code = server(argv[4], command, 0);
+            } else if (!strcmp(argv[1], "-lk") && !strcmp(argv[2], "--e"))
+                exit_code = server(argv[4], argv[3], 1);
+            else if (!strcmp(argv[1], "-lk") && !strcmp(argv[2], "--c")) {
+                memcpy(command, "cmd /c ", 7);
+                memcpy(command+7, argv[3], strlen(argv[3]));
+                exit_code = server(argv[4], command, 1);
+            } else {
+                fprintf(stderr, "%s", usage);
+                exit_code = 1;
+            }
+            break;
+        default:
             fprintf(stderr, "%s", usage);
-            return 1;
-        }
-    } else if (argc == 5) {
-        if (strcmp(argv[1], "--e") == 0) {
-            
-            exit_code = client(argv[3], argv[4], argv[2]);
-
-        } else if (strcmp(argv[1], "--c") == 0) {
-            
-            int len = strlen(argv[2]) + 8;
-            char *command = (char *) malloc(len * sizeof(char));
-            memset(command, '\0', len);
-            memcpy(command, "cmd /c ", 7);
-            memcpy(command+7, argv[2], strlen(argv[2]));
-            exit_code = client(argv[3], argv[4], command);
-            free(command);
-
-        } else if (strcmp(argv[1], "-l") == 0 && strcmp(argv[2], "--e") == 0) {
-            
-            exit_code = server(argv[4], argv[3], 0);
-
-        } else if (strcmp(argv[1], "-l") == 0 && strcmp(argv[2], "--c") == 0) {
-
-            int len = strlen(argv[3]) + 8;
-            char *command = (char *) malloc(len * sizeof(char));
-            memset(command, '\0', len);
-            memcpy(command, "cmd /c ", 7);
-            memcpy(command+7, argv[3], strlen(argv[3]));
-            exit_code = server(argv[4], command, 0);
-            free(command);
-
-        } else if (strcmp(argv[1], "-lk") == 0 && strcmp(argv[2], "--e") == 0) {
-
-            exit_code = server(argv[4], argv[3], 1);
-
-        } else if (strcmp(argv[1], "-lk") == 0 && strcmp(argv[2], "--c") == 0) {
-
-            int len = strlen(argv[3]) + 8;
-            char *command = (char *) malloc(len * sizeof(char));
-            memset(command, '\0', len);
-            memcpy(command, "cmd /c ", 7);
-            memcpy(command+7, argv[3], strlen(argv[3]));
-            exit_code = server(argv[4], command, 1);
-            free(command);
-
-        } else {
-            fprintf(stderr, "%s", usage);
-            return 1;
-        }
-        
-    } else {
-        fprintf(stderr, "%s", usage);
-        return 1;
+            exit_code = 1;
     }
-    
+
     if (DEBUG) fprintf(stderr, "ExitProcess()\n");
     return exit_code;
 }
