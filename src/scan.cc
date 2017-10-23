@@ -5,7 +5,6 @@ Thomas Daley
 scan.cc
 
 */
-
 #include "scan.h"
 #include <omp.h>
 #include <stdlib.h>

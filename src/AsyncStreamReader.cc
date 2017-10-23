@@ -5,7 +5,6 @@ Thomas Daley
 AsyncStreamReader.cc
 
 */
-
 #include "AsyncStreamReader.h"
 #include <stdio.h>
 #include <fcntl.h>

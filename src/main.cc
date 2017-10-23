@@ -7,7 +7,6 @@ main.cc
 WinCat - A minimal windows implementation of the netcat tool.
 
 */
-
 #include "server.h"
 #include "client.h"
 #include "scan.h"

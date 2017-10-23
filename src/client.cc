@@ -5,7 +5,6 @@ Thomas Daley
 client.cc
 
 */
-
 #include "client.h"
 #include "WinCat.h"
 #include <io.h>

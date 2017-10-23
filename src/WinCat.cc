@@ -5,7 +5,6 @@ Thomas Daley
 wincat.cc
 
 */
-
 #include "wincat.h"
 #include "pipes.h"
 #include <windows.h>
@@ -93,11 +92,8 @@ int WinCat::Process(SOCKET ClientSocket) {
         FD_SET(ClientSocket, &readfds);
         FD_SET(ClientSocket, &writefds);
         FD_SET(ClientSocket, &exceptfds);
-
-        //struct timeval timeout;
-        //timeout.tv_sec = 3;
-        //timeout.tv_usec = 0;
        
+        /* Pass NULL for timeout for blocking calls */
         int rs = select(3, &readfds, &writefds, &exceptfds, NULL);
         if (rs == SOCKET_ERROR) {
             if (DEBUG) fprintf(stderr, "Wincat: Select() failed with error: %d\n", WSAGetLastError());

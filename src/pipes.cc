@@ -5,7 +5,6 @@ Thomas Daley
 pipe.cc
 
 */
-
 #include <windows.h>
 #include <tchar.h>
 #include "atlstr.h"
