@@ -18,6 +18,8 @@ client.h
 #include <iphlpapi.h>
 #include <stdio.h>
 
-int client(char *host, char *port, char *filename);
+int client(char *host, 
+           char *port, 
+           char *filename);
 
 #endif

@@ -90,19 +90,19 @@ int server(char *port, char *filename, int keep_listening) {
         wincat->Process(ClientSocket);
 
     } while (keep_listening);
-
-
+    
     /* No longer need server socket */
     closesocket(ListenSocket);
 
     /* Shut down the connection since we're done */
-    iResult = shutdown(ClientSocket, SD_SEND);
+    iResult = shutdown(ClientSocket, SD_BOTH);
     if (iResult == SOCKET_ERROR) {
         fprintf(stderr, "Shutdown failed with error: %d\n", WSAGetLastError());
         closesocket(ClientSocket);
+        WSACleanup();
         return 1;
     }
-        
+    
     /* Cleanup */
     delete wincat;
     closesocket(ClientSocket);

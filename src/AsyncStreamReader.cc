@@ -14,7 +14,6 @@ AsyncStreamReader.cc
 #define DEBUG 1
 
 DWORD WINAPI text_reader_thread(LPVOID data) {
-    
     PStreamReaderData p_data = (PStreamReaderData) data;
 
     while(!feof(p_data->stream)) {
@@ -42,7 +41,6 @@ DWORD WINAPI text_reader_thread(LPVOID data) {
 }
 
 DWORD WINAPI binary_reader_thread(LPVOID data) {    
-    
     PStreamReaderData p_data = (PStreamReaderData) data;
 
     while(!feof(p_data->stream)) {
@@ -76,7 +74,6 @@ AsyncStreamReader::AsyncStreamReader() {
 }
 
 AsyncStreamReader::AsyncStreamReader(FILE *stream, int type) {
-    
     data.stream = stream;
     if (data.stream == NULL) {
         fprintf(stderr, "AsyncStreamReader: Stream is NULL.\n");
@@ -128,24 +125,24 @@ AsyncStreamReader::AsyncStreamReader(FILE *stream, int type) {
 
 AsyncStreamReader::~AsyncStreamReader() {
     if (T_HANDLE) {
-        if (!CancelIo(T_HANDLE)){
-            if (DEBUG) fprintf(stderr, "AsyncStreamReader: Unable to cancel IO on thread.\n");
-        }
-        if (!TerminateThread(T_HANDLE, 0)){
-            if (DEBUG) fprintf(stderr, "AsyncStreamReader: Failed to terminate thread.\n");
-        }
+        //if (!CancelIo(T_HANDLE)){
+        //    if (DEBUG) fprintf(stderr, "AsyncStreamReader: Unable to cancel IO on thread.\n");
+        //}
+        //if (!TerminateThread(T_HANDLE, 0)){
+            //if (DEBUG) fprintf(stderr, "AsyncStreamReader: Failed to terminate thread.\n");
+        //}
 
         ///////////////////////////////////////
         // Wait until child thread exits.
-        if (DEBUG) fprintf(stderr, "AsyncStreamReader: Waiting for thread to terminate.\n");
-        WaitForSingleObject( T_HANDLE, INFINITE );
+        //if (DEBUG) fprintf(stderr, "AsyncStreamReader: Waiting for thread to terminate.\n");
+        //WaitForSingleObject( T_HANDLE, INFINITE );
         ///////////////////////////////////////
-
         CloseHandle(T_HANDLE);
     }
 
     /* Without releasing ownership, a deadlock can occur when the main thread terminates */
     if (data.key) ReleaseMutex(data.key);
+    if (DEBUG) fprintf(stderr, "AsyncStreamReader: Thread terminated.\n");
 }
 
 int AsyncStreamReader::Read(char *dest) {

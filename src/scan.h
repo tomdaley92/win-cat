@@ -21,8 +21,14 @@ scan.h
 
 #define MIN_PORT 1
 #define MAX_PORT 65535
+#define NON_BLOCKING 1
 
-int connect_scan(char *host, int low, int high);
-int ping_scan(char *cidr, int timeout);
+int connect_scan(char *host, 
+                 int low, 
+                 int high, 
+                 int timeout);
+
+int ping_scan(char *cidr, 
+              int timeout);
 
 #endif

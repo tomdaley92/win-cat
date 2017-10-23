@@ -19,6 +19,8 @@ server.h
 #include <iphlpapi.h>
 #include <stdio.h>
 
-int server(char *port, char *filename, int keep_listening);
+int server(char *port, 
+           char *filename, 
+           int keep_listening);
 
 #endif

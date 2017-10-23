@@ -78,7 +78,7 @@ int client(char *host, char *port, char *filename) {
     wincat->Process(ConnectSocket);
 
     /* Shut down the connection since we're done */
-    iResult = shutdown(ConnectSocket, SD_SEND);
+    iResult = shutdown(ConnectSocket, SD_BOTH);
     if (iResult == SOCKET_ERROR) {
         fprintf(stderr, "Shutdown failed with error: %d\n", WSAGetLastError());
         closesocket(ConnectSocket);

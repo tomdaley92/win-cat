@@ -81,7 +81,7 @@ int main(int argc, char **argv) {
     if (argc == 3) {
         if (strcmp(argv[1], "-s") == 0) {
 
-            // Default ping timeout to 1 second
+            /* Default ping timeout to 1 second */
             exit_code = ping_scan(argv[2], 1000);
 
         } else if (strcmp(argv[1], "-l") == 0) {
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
                 high = atoi(end);
             }
 
-            exit_code = connect_scan(argv[2], low, high);
+            exit_code = connect_scan(argv[2], low, high, 750);
 
         } else {
             fprintf(stderr, "%s", usage);

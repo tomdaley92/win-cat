@@ -12,6 +12,7 @@ pipe.h
 #include <stdio.h>
 
 typedef struct PipeHandles {
+    BOOL process_spawned = 0;
     HANDLE Child_Std_IN_Rd = NULL;
     HANDLE Child_Std_IN_Wr = NULL;
     HANDLE Child_Std_OUT_Rd = NULL;
@@ -20,6 +21,6 @@ typedef struct PipeHandles {
 } PipeHandles, *pPipeHandles;
 
 PipeHandles get_pipes(char *filename);
-int close_pipes(struct PipeHandles pipes);
+int close_pipes(PipeHandles pipes);
 
 #endif

@@ -12,7 +12,7 @@ wincat.cc
 #include <io.h>
 #include <fcntl.h>
 
-#define DEBUG 0
+#define DEBUG 1
 
 WinCat::WinCat(char *filename) {
     this->filename = NULL;
@@ -24,9 +24,9 @@ WinCat::WinCat(char *filename) {
 }
 
 WinCat::~WinCat() { 
-    if (filename) close_pipes(pipes);
+    if (pipes.process_spawned) close_pipes(pipes);
     free(filename);
-    delete input;
+    if (input) delete input;
     _setmode(fileno(stdout), _O_TEXT);
 }
 
@@ -46,6 +46,9 @@ int WinCat::Launch() {
     } else {
         /* Create a new process */
         this->pipes = get_pipes(this->filename);
+        if (!pipes.process_spawned) {
+            return 1;
+        } 
     
         int in_fd = _open_osfhandle((intptr_t)this->pipes.Child_Std_OUT_Rd, _O_BINARY | _O_RDONLY);
         int out_fd = _open_osfhandle((intptr_t)this->pipes.Child_Std_IN_Wr, _O_BINARY | _O_APPEND);
@@ -65,9 +68,8 @@ int WinCat::Launch() {
 }
 
 int WinCat::Process(SOCKET ClientSocket) {
-
     if (!this->launched) {
-        Launch();
+        if(Launch()) return 1;
     }
     
     int iResult; 
@@ -92,11 +94,11 @@ int WinCat::Process(SOCKET ClientSocket) {
         FD_SET(ClientSocket, &writefds);
         FD_SET(ClientSocket, &exceptfds);
 
-        struct timeval timeout;
-        timeout.tv_sec = 3;
-        timeout.tv_usec = 0;
+        //struct timeval timeout;
+        //timeout.tv_sec = 3;
+        //timeout.tv_usec = 0;
        
-        int rs = select(3, &readfds, &writefds, &exceptfds, &timeout);
+        int rs = select(3, &readfds, &writefds, &exceptfds, NULL);
         if (rs == SOCKET_ERROR) {
             if (DEBUG) fprintf(stderr, "Wincat: Select() failed with error: %d\n", WSAGetLastError());
             break;
@@ -149,6 +151,5 @@ int WinCat::Process(SOCKET ClientSocket) {
             break;
         }
     }
-
     return 0;
 }

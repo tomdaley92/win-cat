@@ -11,7 +11,7 @@ pipe.cc
 #include "atlstr.h"
 #include "pipes.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 PipeHandles get_pipes(char *filename) {
 
@@ -56,8 +56,7 @@ PipeHandles get_pipes(char *filename) {
     TCHAR szCmdline[MAX_PATH];
     _tcscpy(szCmdline, A2T(filename));
  
-    STARTUPINFO siStartInfo;
-    BOOL bSuccess = FALSE; 
+    STARTUPINFO siStartInfo; 
 
     /* Set up members of the PROCESS_INFORMATION structure */ 
     ZeroMemory( &pipes.piProcInfo, sizeof(PROCESS_INFORMATION) );
@@ -78,7 +77,7 @@ PipeHandles get_pipes(char *filename) {
     }
 
     /* Create the child process */ 
-    bSuccess = CreateProcessAsUser(
+    pipes.process_spawned = CreateProcessAsUser(
         CallerToken,
         NULL, 
         szCmdline,     // command line 
@@ -92,9 +91,8 @@ PipeHandles get_pipes(char *filename) {
         &pipes.piProcInfo);  // receives PROCESS_INFORMATION 
 
     /* If an error occurs, exit the application */ 
-    if ( !bSuccess ) {
-        fprintf(stderr, "Unable to spawn child process.\n");
-        exit(1);
+    if ( !pipes.process_spawned ) {
+        fprintf(stderr, "Unable to spawn child process.\n");   
     }
     
     /* We no longer need this handle */

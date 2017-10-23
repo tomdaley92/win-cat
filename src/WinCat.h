@@ -17,14 +17,13 @@ wincat.h
 class WinCat {
     
     private:
-        AsyncStreamReader *input;
+        AsyncStreamReader *input = NULL;
         FILE *output;
         struct PipeHandles pipes;
         int launched;
         char *filename;
 
         int Launch();
-        
 
     public:
         WinCat(char *filename);

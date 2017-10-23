@@ -34,7 +34,10 @@ class AsyncStreamReader {
 
     public:
         AsyncStreamReader();
-        AsyncStreamReader(FILE *pipe, int type);
+
+        AsyncStreamReader(FILE *pipe, 
+                          int type);
+        
         ~AsyncStreamReader();
         int Read(char *dest);
 

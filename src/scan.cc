@@ -16,9 +16,6 @@ scan.cc
 #define DEBUG 0
 
 int reverse_service_lookup(char *result, char *dotted_ip, int port) {
-    WSADATA wsaData = {0};
-    int iResult = 0;
-
     DWORD dwRetval;
 
     struct sockaddr_in saGNI;
@@ -44,10 +41,6 @@ int reverse_service_lookup(char *result, char *dotted_ip, int port) {
 }
 
 int reverse_dns_lookup(char *result, char *dotted_ip) {
-
-    WSADATA wsaData = {0};
-    int iResult = 0;
-
     DWORD dwRetval;
 
     struct sockaddr_in saGNI;
@@ -72,12 +65,11 @@ int reverse_dns_lookup(char *result, char *dotted_ip) {
     return 0;
 }
 
-int long_to_dotted_ipv4(char *dest, unsigned long ip_addr) {
-    /* Helper debug function */
-    int a;
-    int b;
-    int c;
-    int d;
+int long_to_dotted_ipv4(char *dest, unsigned long long ip_addr) {
+    unsigned long long a;
+    unsigned long long b;
+    unsigned long long c;
+    unsigned long long d;
 
     a = ip_addr & 0xFF;
     ip_addr = ip_addr >> 8;
@@ -87,15 +79,13 @@ int long_to_dotted_ipv4(char *dest, unsigned long ip_addr) {
     ip_addr = ip_addr >> 8;
     d = ip_addr & 0xFF;
 
-    sprintf(dest, "%d.%d.%d.%d", a, b, c, d);
+    sprintf(dest, "%llu.%llu.%llu.%llu", a, b, c, d);
     return 0;
 }
 
 
 char *get_dotted_ipv4(char *hostname) {
-
     char *ip = NULL;
-    int iRetval;
     DWORD dwRetval;
 
     struct addrinfo *result = NULL;
@@ -149,8 +139,7 @@ char *get_dotted_ipv4(char *hostname) {
     return ip;
 }
 
-int ping_host(char *host, int timeout, int *latency, char *info) {
-    
+int ping_host(char *host, int timeout, int *latency) {
     HANDLE hIcmpFile;
     unsigned long ipaddr = INADDR_NONE;
     DWORD dwRetVal = 0;
@@ -183,7 +172,7 @@ int ping_host(char *host, int timeout, int *latency, char *info) {
         ReplyAddr.S_un.S_addr = pEchoReply->Address;
         
         *latency = pEchoReply->RoundTripTime;
-        reverse_dns_lookup(info, host);
+        
     } else {
         /* ICMP echo request failed */
         return_code = 1;;
@@ -194,22 +183,17 @@ int ping_host(char *host, int timeout, int *latency, char *info) {
 }
 
 int send_arp(char *dest, char *dotted) {
-
     DWORD dwRetVal;
     IPAddr DestIp = inet_addr(dotted);
     IPAddr SrcIp = 0;       /* default for src ip */
     ULONG MacAddr[2];       /* for 6-byte hardware addresses */
     ULONG PhysAddrLen = 6;  /* default to length of six bytes */
-
     BYTE *bPhysAddr;
     unsigned int i;
-
     memset(&MacAddr, 0xff, sizeof (MacAddr));
 
     if (DEBUG) fprintf(stderr, "Sending ARP request for IP address: %s\n", dotted);
-
     dwRetVal = SendARP(DestIp, SrcIp, &MacAddr, &PhysAddrLen);
-
     if (dwRetVal == ERROR_BAD_NET_NAME) {
         if (DEBUG) fprintf(stderr, "Error: Cannot send Arp request to a network on different subnet\n");
     }
@@ -233,11 +217,10 @@ int send_arp(char *dest, char *dotted) {
 }
 
 void display_ping_result(char *host, char *result, int latency) {
-    
     if (strcmp(host, result) != 0) {
-        fprintf(stdout, "Reply (%ld ms) from %s (%s)", latency, result, host);
+        fprintf(stdout, "Reply in %4ld ms from %16s  [%s]", latency, host, result);
     } else {
-        fprintf(stdout, "Reply (%ld ms) from %s", latency, host);
+        fprintf(stdout, "Reply in %4ld ms from %16s", latency, host);
     }
 
     /* Send Arp requests */
@@ -245,12 +228,10 @@ void display_ping_result(char *host, char *result, int latency) {
     //if (!send_arp(mac, host)) {
     //    fprintf(stdout, "\tMAC: %s", mac);
     //}
-    
     fprintf(stdout, "\n");
 }
 
 int ping_scan(char *cidr, int timeout) {
-
     WSADATA wsaData;
     int iResult;
     
@@ -269,99 +250,72 @@ int ping_scan(char *cidr, int timeout) {
         return 1;
     }
 
-    unsigned long ip = inet_addr(dotted_ip);
+    unsigned long long ip = inet_addr(dotted_ip);
     char *network_bits = strtok(NULL, "/\\");
 
     if (network_bits == NULL) {
         /* User supplied ip IS NOT using CIDR notation */
-        
         char host[NI_MAXHOST];
         long_to_dotted_ipv4(host, ip);
         int latency = 0;
 
         /* Print result */
-        char result[NI_MAXHOST];
-        if (!ping_host(host, timeout, &latency, result)) {
+        if (!ping_host(host, timeout, &latency)) {
+            char result[NI_MAXHOST];
+            reverse_dns_lookup(result, host);
             display_ping_result(host, result, latency);
         }
 
     } else {
         /* User supplied ip IS using CIDR notation */
-        
         int host_bits = 32 - atoi(network_bits);
         if (host_bits < 0 || host_bits > 32 ) {
             fprintf(stderr, "Invalid CIDR notation.\n");
             return 1;
         }
-
         unsigned long subnet_mask = (0xFFFFFFFF >> host_bits);
         unsigned long network = ip & subnet_mask;
 
         if (DEBUG) {
             char subnet_mask_str[NI_MAXHOST];
             char network_str[NI_MAXHOST];
-
             long_to_dotted_ipv4(subnet_mask_str, subnet_mask);
             long_to_dotted_ipv4(network_str, network);
-
-            fprintf(stderr, "Subnet Mask: %s\nNetwork: %s\n", subnet_mask_str, network_str);
+            fprintf(stderr, "Network: %s\nSubnet Mask: %s\n", network_str, subnet_mask_str);
         }
 
-        unsigned long num_hosts =  pow(2, host_bits);
-        
-        int *ping = (int *) malloc(num_hosts * sizeof(int));
-        memset(ping, 0, sizeof(int) * num_hosts);
+        unsigned long long num_hosts =  pow(2, host_bits);
+        if (DEBUG) fprintf(stderr, "Addresses: %llu\n", num_hosts);
 
-        int *latency = (int *) malloc(num_hosts * sizeof(int));
-        memset(latency, 0, sizeof(int) * num_hosts);
-
-        char **result = (char **) malloc(num_hosts * sizeof(char *));
-        for (int i = 0; i < num_hosts; i++) {
-            result[i] = (char *) malloc(NI_MAXHOST * sizeof(char));
-        }
-
-        if (DEBUG) fprintf(stderr, "Requesting %d threads.\n", num_hosts);
+        /* The number of threads created is not guaranteed to be the number of threads requested */
         omp_set_num_threads(num_hosts);
 
         /* Multithreaded for-loop */
-        #pragma omp parallel for 
-        for (int i = 0; i < num_hosts; i++) {
+        #pragma omp parallel for ordered
+        for (long long int i = 0; i < num_hosts; i++) {
             
-            unsigned long current = network | (i << (32 - host_bits)); 
+            unsigned long long current = network | (i << (32 - host_bits)); 
             char host[NI_MAXHOST];
             long_to_dotted_ipv4(host, current);
+            int latency;
 
-            if (!ping_host(host, timeout, &latency[i], &result[i][0])) {
-                ping[i] = 1;
+            if (!ping_host(host, timeout, &latency)) {
+                /* Successful PING */
+                char name[NI_MAXHOST];
+                reverse_dns_lookup(name, host);
+                #pragma omp ordered 
+                {
+                    display_ping_result(host, name, latency);
+                }
             }
-        }
-
-        /* Print results */
-        for (int i = 0; i < num_hosts; i++) {
-            unsigned long current = network | (i << (32 - host_bits)); 
-            char host[NI_MAXHOST];
-            long_to_dotted_ipv4(host, current);
-
-            if (ping[i]) {
-                display_ping_result(host, result[i], latency[i]);
-            }
-        }
-        free(ping);
-        free(latency);
-        for (int i = 0; i < num_hosts; i++) {
-            free(result[i]);
-        }
-        free (result);
-        
+        }    
     }
-
     /* Cleanup */
     WSACleanup();
     return 0;
 }
 
-int connect_scan(char *host, int low, int high) {
-
+int connect_scan(char *host, int low, int high, int timeout) {
     if (low < MIN_PORT || high > MAX_PORT) {
         fprintf(stderr, "Ports must be within the range 1-65535.\n");
         return 1;
@@ -383,23 +337,12 @@ int connect_scan(char *host, int low, int high) {
     if (DEBUG) fprintf(stderr, "Requesting %d threads.\n", num_ports);
     omp_set_num_threads(num_ports);
 
-    int *results = (int *) malloc(num_ports * sizeof(int));
-    memset(results, 0, num_ports * sizeof(int));
-
-    char **service = (char **) malloc(num_ports * sizeof(char *));
-    for (int i = 0; i < num_ports; i++) {
-        service[i] = (char *) malloc(NI_MAXSERV * sizeof(char));
-    }
-
-    //////
     fd_set writefds;
     FD_ZERO(&writefds);
-    //////
   
     /* Multithreaded for-loop */
-    #pragma omp parallel for
+    #pragma omp parallel for ordered
     for (int i = low; i <= high; i++) {
-        
         char port[6];
         sprintf(port, "%d", i);
 
@@ -407,7 +350,6 @@ int connect_scan(char *host, int low, int high) {
         struct addrinfo *result = NULL,
                         *ptr = NULL,
                         hints;
-
 
         ZeroMemory( &hints, sizeof(hints) );
         hints.ai_family = AF_UNSPEC;
@@ -425,77 +367,53 @@ int connect_scan(char *host, int low, int high) {
 
                 /* Create a SOCKET for connecting to server */
                 ConnectSocket = socket(ptr->ai_family, ptr->ai_socktype, ptr->ai_protocol);
-
                 if (ConnectSocket == INVALID_SOCKET) {
                     fprintf(stderr, "Socket failed with error: %ld\n", WSAGetLastError());
                 }
 
-                
-
-                /////// attempt to make the socket non-blocking////////
-                unsigned long NON_BLOCKING = 1; // nonzero = non-blocking
-                if (ioctlsocket(ConnectSocket, FIONBIO, &NON_BLOCKING)) {
+                /* set socket to non-blocking if flag present */
+                unsigned long non_blocking = NON_BLOCKING;
+                if (ioctlsocket(ConnectSocket, FIONBIO, &non_blocking)) {
                     fprintf(stderr, "Failed to set socket mode.\n");
                 }
                 
                 /* Connect to server */ 
-                //iResult = connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
-                connect( ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
+                connect(ConnectSocket, ptr->ai_addr, (int)ptr->ai_addrlen);
 
                 fd_set writefds;
                 FD_ZERO(&writefds);
                 FD_SET(ConnectSocket, &writefds);
 
-                // timeouts should be somewhere between 100ms (100000 usec) and 1000ms (1 sec)
-                struct timeval timeout; 
-                timeout.tv_sec = 0;
-                timeout.tv_usec = 750000;
+                /* the timeout parameter is given in ms */
+                int seconds = timeout >= 1000? timeout/1000 : 0;
+                int micro_seconds = (timeout - 1000*seconds) * 1000;
 
-                int rs = select(1, NULL, &writefds, NULL, &timeout);
+                struct timeval s_timeout; 
+                s_timeout.tv_sec = seconds;
+                s_timeout.tv_usec = micro_seconds;
+
+                int rs = select(1, NULL, &writefds, NULL, &s_timeout);
                 if (FD_ISSET(ConnectSocket, &writefds)) {
-                    results[i-low] = 1;
-                    reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
+                    /* port is OPEN */
+                    char service[NI_MAXSERV];
+                    reverse_service_lookup(service, get_dotted_ipv4(host), i);
+
+                    #pragma omp ordered 
+                    {  
+                        fprintf(stdout, "Open: %5d ", i);
+                        if (i != atoi(service)) {
+                            fprintf(stdout, " [%s]", service);
+                        }
+                        fprintf(stdout, "\n");   
+                    }
                     break;
                 }
-                ///////////////////////////////////////////////////////
-
-
-                //if (iResult == SOCKET_ERROR) {
-                //    closesocket(ConnectSocket);
-                //    ConnectSocket = INVALID_SOCKET;
-                //    continue;
-                //}
-                //break;
-
-
             }  
             freeaddrinfo(result);
-
-            //if (ConnectSocket != INVALID_SOCKET) {
-            //    results[i-low] = 1;
-            //    reverse_service_lookup(&service[i-low][0], get_dotted_ipv4(host), i);
-            //}  
         }
         closesocket(ConnectSocket);
-    }
-
-    /* Check the results */
-    for (int i = 0; i < num_ports; i++) {
-        if (results[i]) {
-            fprintf(stdout, "Open: %d ", i+low);
-            if (i+low != atoi(service[i])) {
-                fprintf(stdout, "(%s)", service[i]);
-            }
-            fprintf(stdout, "\n");
-        }
-    }
-    
+    } 
     /* Cleanup */
-    free(results);
-    for (int i = 0; i < num_ports; i++) {
-        free(service[i]);
-    }
-    free(service);
     WSACleanup();
     return 0;
 }
