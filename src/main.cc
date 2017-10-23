@@ -17,7 +17,7 @@ WinCat - A minimal windows implementation of the netcat tool.
 #include <windows.h>
 #include <tchar.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 const char *title = "WinCat - v1.04\n";
 

@@ -12,7 +12,7 @@ wincat.cc
 #include <io.h>
 #include <fcntl.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 WinCat::WinCat(char *filename) {
     this->filename = NULL;

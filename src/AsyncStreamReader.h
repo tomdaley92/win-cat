@@ -5,7 +5,6 @@ Thomas Daley
 AsyncStreamReader.cc
 
 */
-
 #ifndef ASYNC_STREAM_READER_H
 #define ASYNC_STREAM_READER_H
 
@@ -37,7 +36,7 @@ class AsyncStreamReader {
 
         AsyncStreamReader(FILE *pipe, 
                           int type);
-        
+
         ~AsyncStreamReader();
         int Read(char *dest);
 

@@ -11,7 +11,7 @@ AsyncStreamReader.cc
 #include <fcntl.h>
 #include <io.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 DWORD WINAPI text_reader_thread(LPVOID data) {
     PStreamReaderData p_data = (PStreamReaderData) data;
@@ -124,25 +124,14 @@ AsyncStreamReader::AsyncStreamReader(FILE *stream, int type) {
 }
 
 AsyncStreamReader::~AsyncStreamReader() {
-    if (T_HANDLE) {
-        //if (!CancelIo(T_HANDLE)){
-        //    if (DEBUG) fprintf(stderr, "AsyncStreamReader: Unable to cancel IO on thread.\n");
-        //}
-        //if (!TerminateThread(T_HANDLE, 0)){
-            //if (DEBUG) fprintf(stderr, "AsyncStreamReader: Failed to terminate thread.\n");
-        //}
+    /* We cannot guarantee which state the thread is in */
+    if (data.key) ReleaseMutex(data.key);
 
-        ///////////////////////////////////////
-        // Wait until child thread exits.
+    if (T_HANDLE) {
         //if (DEBUG) fprintf(stderr, "AsyncStreamReader: Waiting for thread to terminate.\n");
         //WaitForSingleObject( T_HANDLE, INFINITE );
-        ///////////////////////////////////////
         CloseHandle(T_HANDLE);
-    }
-
-    /* Without releasing ownership, a deadlock can occur when the main thread terminates */
-    if (data.key) ReleaseMutex(data.key);
-    if (DEBUG) fprintf(stderr, "AsyncStreamReader: Thread terminated.\n");
+    }  
 }
 
 int AsyncStreamReader::Read(char *dest) {

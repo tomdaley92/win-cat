@@ -5,7 +5,6 @@ Thomas Daley
 wincat.h
 
 */
-
 #ifndef WINCAT_H
 #define WINCAT_H
 

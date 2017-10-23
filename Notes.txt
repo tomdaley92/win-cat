@@ -5,20 +5,7 @@ For v1.04
 -w timeout (in milliseconds)
 
 
-
--- format ping requests better
-    -- ping scans allocate ALOT of memory, my implementation sucks! - TODO
-        -- crashes when attempting to use a subnet mask of about 16 or lower!
 -- connect scans
     - sped up with non-blocking sockets successfully
 -- write a connect() wrapper that takes in a timeout or somethind along those lines...
 -- connecting to clients should be allowed to use a port range
-
-
-hanging issue (to reproduce) :
-    host A: wincat -l 8000
-            wincat -l 8001
-    host B: nc HOST_A_IP 8000-8001 < some_text_file
-
-    -- seems to be hanging at ExitProcess()
-        -- see msdn's notes about deadlocks caused by this function
