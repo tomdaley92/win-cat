@@ -68,11 +68,7 @@ const char *details =
                     "          range of hosts.\n"
                     "\n"
                     "  port  : Must be single integer. If the -z option\n"
-                    "          is specified, a range of ports can be used instead.\n";
-
-char opts[10];
-
-                    
+                    "          is specified, a range of ports can be used instead.\n";               
 
 int main(int argc, char **argv) {
     int exit_code = 0;
