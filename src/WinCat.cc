@@ -99,12 +99,6 @@ int WinCat::Process(SOCKET ClientSocket) {
         FD_SET(ClientSocket, &writefds);
         FD_SET(ClientSocket, &exceptfds);
 
-        //struct timeval s_timeout; 
-        //s_timeout.tv_sec = 1;
-        //s_timeout.tv_usec = 0;
-       
-        /* Pass NULL for timeout for blocking calls */
-        // Setting the write-set to NULL fixes the issue where this function never blocks (High CPU usage)...
         int rs = select(1, &readfds, &writefds, &exceptfds, NULL);
         if (rs == SOCKET_ERROR) {
             if (DEBUG) fprintf(stderr, "Wincat: Select() failed with error: %d\n", WSAGetLastError());
@@ -149,6 +143,8 @@ int WinCat::Process(SOCKET ClientSocket) {
             if (DEBUG) fprintf(stderr, "Wincat: Socket exception.\n");
             break;
         }
+        /* Free up some CPU time for the OS */
+        Sleep(1);
     }
     return 0;
 }
