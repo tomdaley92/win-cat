@@ -1,5 +1,7 @@
-For v1.04
+For v1.04 - TODO
 -----------------------
+
+- Write a better arg parser/solution
 
 NEW OPTIONS:
 -a send arp requests (for class-c ip addresses only?)
