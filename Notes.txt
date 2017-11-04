@@ -6,22 +6,12 @@ NEW OPTIONS:
 -w timeout (in milliseconds)
 -r (attempt reverse dns lookups)
 
-
--- connect scans
-    - sped up with non-blocking sockets successfully
 -- write a connect() wrapper that takes in a timeout or somethind along those lines...
 -- connecting to clients should be allowed to use a port range
 
--- Clean up the server.c and client.c
--- Clean up the rest of the code
 -- get_pipes() might be better off passing in a pointer to a struct 
    so that it can return an error code instead
 
-BUGS:
-
-select is not blocking when polling both read and write sets (100% of 1 cpu core == busy looping)
-- Then again this might be expected behavior
-
-EASTER EGG:
+EASTER EGGs:
 
 wc towel.blinkenlights.nl 23
