@@ -22,4 +22,4 @@ typedef struct PipeHandles {
 PipeHandles get_pipes(char *filename);
 int close_pipes(PipeHandles pipes);
 
-#endif
+#endif /* PIPES_H */

@@ -28,6 +28,7 @@ int connect_scan(char *host,
                  int timeout);
 
 int ping_scan(char *cidr, 
-              int timeout);
+              int timeout,
+              bool dig);
 
-#endif
+#endif /* SCAN_H */

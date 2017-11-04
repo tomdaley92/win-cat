@@ -22,4 +22,4 @@ int client(char *host,
            char *port, 
            char *filename);
 
-#endif
+#endif /* CLIENT_H */

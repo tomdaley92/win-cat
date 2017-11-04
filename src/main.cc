@@ -19,18 +19,18 @@ WinCat - A minimal windows implementation of the netcat tool.
 #define DEBUG 0
 #define MAX_LINE 1025
 
-const char *title = "WinCat - v1.04\n";
+const char *version = "WinCat - v1.04\n";
 
 const char *about = "A simple TCP/IP network debugging utility for Windows.\n"
                     "Inspired by the traditional nc we all know and love.\n";
 
-const char *usage = "usage: wincat [-lkszh] [--e filename] [--c string] [host] [port]\n";
+const char *usage = "usage: wc [-lkszhv] [--e filename] [--c string] [host] [port]\n";
 
 const char *details =
                     "   -l   : Listen for incoming connections. It is an error to\n"
                     "          use this option with a host specified.\n"
                     "\n"
-                    "   -k   : Keep listening. Forces wincat to stay listening \n"
+                    "   -k   : Keep listening. Forces wc to stay listening \n"
                     "          for another connection after its current\n"
                     "          connection is completed. It is an error to use\n"
                     "          this option without -l.\n"
@@ -38,28 +38,29 @@ const char *details =
                     "   -s   : Specify host(s) on the network to send ICMP echo\n"
                     "          requests. It is an error to use this option with\n"
                     "          any other options specified.\n"
-                    "          e.g.    wincat -s 192.168.1.0/24\n"
+                    "          e.g.    wc -s 192.168.1.0/24\n"
                     "\n"
                     "   -z   : Specify port(s) on the host to scan for listening\n"
                     "          daemons using the connect() call. It is an error\n"
                     "          to use this option with any other options\n"
                     "          specified.\n"
-                    "          e.g.    wincat -z localhost 1-200\n"
+                    "          e.g.    wc -z localhost 1-200\n"
                     "\n"
                     "   --c  : Specify commands to pass to \"cmd /c\" for\n"
                     "          execution after connecting. It is an error\n"
                     "          to use this option with --e, -s, or -z.\n"
-                    "          e.g.    host A (10.0.0.2): wincat -l --c whoami 8118\n"
-                    "                  host B (10.0.0.3): wincat 10.0.0.2 8118\n"
+                    "          e.g.    host A (10.0.0.2): wc -l --c whoami 8118\n"
+                    "                  host B (10.0.0.3): wc 10.0.0.2 8118\n"
                     "\n"
                     "   --e  : Specify filename to execute after connecting\n"
                     "          (use with caution). It is an error to use this\n"
                     "          option with --c, -s, or -z.\n"
-                    "          e.g.    host A (10.0.0.2): wincat -lk --e cmd 8118\n"
-                    "                  host B (10.0.0.3): wincat 10.0.0.2 8118\n"
+                    "          e.g.    host A (10.0.0.2): wc -lk --e cmd 8118\n"
+                    "                  host B (10.0.0.3): wc 10.0.0.2 8118\n"
                     "\n"
-                    "   -h   : Displays this help page, when this option\n"
-                    "          is specified.\n"
+                    "   -h   : Print this help page.\n"
+                    "\n"
+                    "   -v   : Print version information.\n"
                     "\n"
                     "  host  : Can be a numerical address or a symbolic\n"
                     "          hostname. If the -s option is specified, CIDR\n"
@@ -68,6 +69,9 @@ const char *details =
                     "\n"
                     "  port  : Must be single integer. If the -z option\n"
                     "          is specified, a range of ports can be used instead.\n";
+
+char opts[10];
+
                     
 
 int main(int argc, char **argv) {
@@ -76,13 +80,15 @@ int main(int argc, char **argv) {
     switch (argc) {
         case 2:
             if (!strcmp(argv[1], "-h"))
-                fprintf(stdout, "%s\n%s\n%s\n%s",title, about, usage, details);
-            else 
+                fprintf(stdout, "%s\n%s\n%s\n%s", version, about, usage, details);
+            else if (!strcmp(argv[1], "-v"))
+                fprintf(stderr, "%s", version);
+            else
                 fprintf(stderr, "%s", usage);
             break;
         case 3:
             if (!strcmp(argv[1], "-s")) 
-                exit_code = ping_scan(argv[2], 1000);
+                exit_code = ping_scan(argv[2], 900, true);
             else if (!strcmp(argv[1], "-l")) 
                 exit_code = server(argv[2], NULL, 0);
             else if (!strcmp(argv[1], "-lk")) 

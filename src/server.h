@@ -22,4 +22,4 @@ int server(char *port,
            char *filename, 
            int keep_listening);
 
-#endif
+#endif /* SERVER_H */

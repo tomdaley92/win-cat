@@ -8,7 +8,7 @@ AsyncStreamReader.cc
 #ifndef ASYNC_STREAM_READER_H
 #define ASYNC_STREAM_READER_H
 
-#define DEFAULT_BUFLEN 4096
+#define DEFAULT_BUFLEN 8192
 
 #define TEXT_READER 1
 #define BINARY_READER 0
@@ -40,6 +40,6 @@ class AsyncStreamReader {
         ~AsyncStreamReader();
         int Read(char *dest);
 
-};  
+}; 
 
-#endif
+#endif /* ASYNC_STREAM_READER_H */

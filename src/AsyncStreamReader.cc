@@ -21,7 +21,7 @@ DWORD WINAPI text_reader_thread(LPVOID data) {
         memset(sendbuf, '\0', DEFAULT_BUFLEN);
          
         if (fgets(sendbuf, DEFAULT_BUFLEN, p_data->stream) != NULL) {
-            
+
             if (WaitForSingleObject(p_data->key, INFINITE) == WAIT_OBJECT_0) {
                 p_data->q.push(sendbuf);
                 p_data->s.push(strlen(sendbuf));

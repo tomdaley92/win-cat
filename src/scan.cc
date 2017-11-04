@@ -64,21 +64,21 @@ int reverse_dns_lookup(char *result, char *dotted_ip) {
     return 0;
 }
 
-int long_to_dotted_ipv4(char *dest, unsigned long long ip_addr) {
-    unsigned long long a;
-    unsigned long long b;
-    unsigned long long c;
-    unsigned long long d;
-
-    a = ip_addr & 0xFF;
-    ip_addr = ip_addr >> 8;
-    b = ip_addr & 0xFF;
-    ip_addr = ip_addr >> 8;
-    c = ip_addr & 0xFF;
-    ip_addr = ip_addr >> 8;
+int long_to_dotted_ipv4(char *dest, unsigned long ip_addr) {
+    ip_addr = htonl(ip_addr);
+    
+    unsigned char a;
+    unsigned char b;
+    unsigned char c;
+    unsigned char d;
+    
     d = ip_addr & 0xFF;
+    c = (ip_addr >> 8) & 0xFF;
+    b = (ip_addr >> 16) & 0xFF;
+    a = (ip_addr >> 24) & 0xFF;
 
-    sprintf(dest, "%llu.%llu.%llu.%llu", a, b, c, d);
+    //fprintf(stderr, "%lu = (%d.%d.%d.%d)\n", ip_addr, a, b, c, d);
+    sprintf(dest, "%d.%d.%d.%d", a, b, c, d);
     return 0;
 }
 
@@ -128,7 +128,7 @@ char *get_dotted_ipv4(char *hostname) {
                     InetNtop(AF_INET6, &sockaddr_ipv6->sin6_addr, ipstringbuffer, 46));
                 break;
             case AF_NETBIOS:
-                if (DEBUG) fprintf(stderr, "AF_NETBIOS (NetBIOS)\n");
+                fprintf(stderr, "AF_NETBIOS (NetBIOS)\n");
                 break;
             default:
                 if (DEBUG) fprintf(stderr, "Other %ld\n", ptr->ai_family);
@@ -136,49 +136,6 @@ char *get_dotted_ipv4(char *hostname) {
         }
     }
     return ip;
-}
-
-int ping_host(char *host, int timeout, int *latency) {
-    HANDLE hIcmpFile;
-    unsigned long ipaddr = INADDR_NONE;
-    DWORD dwRetVal = 0;
-    char SendData[32] = "Data Buffer";
-    LPVOID ReplyBuffer = NULL;
-    DWORD ReplySize = 0;
-
-    ipaddr = inet_addr(host);
-    
-    hIcmpFile = IcmpCreateFile();
-    if (hIcmpFile == INVALID_HANDLE_VALUE) {
-        if (DEBUG) {
-            fprintf(stderr, "\tUnable to open handle.\n");
-            fprintf(stderr, "IcmpCreatefile returned error: %ld\n", GetLastError());
-        }
-        return 1;
-    }    
-
-    ReplySize = sizeof(ICMP_ECHO_REPLY) + sizeof(SendData);
-    ReplyBuffer = (VOID*) malloc(ReplySize);
-    
-    dwRetVal = IcmpSendEcho(hIcmpFile, ipaddr, SendData, sizeof(SendData), 
-        NULL, ReplyBuffer, ReplySize, timeout);
-
-    int return_code = 0;
-
-    if (dwRetVal != 0) {
-        PICMP_ECHO_REPLY pEchoReply = (PICMP_ECHO_REPLY)ReplyBuffer;
-        struct in_addr ReplyAddr;
-        ReplyAddr.S_un.S_addr = pEchoReply->Address;
-        
-        *latency = pEchoReply->RoundTripTime;
-        
-    } else {
-        /* ICMP echo request failed */
-        return_code = 1;;
-    }
-
-    free(ReplyBuffer);
-    return return_code;
 }
 
 int send_arp(char *dest, char *dotted) {
@@ -215,11 +172,53 @@ int send_arp(char *dest, char *dotted) {
     return 1; 
 }
 
-void display_ping_result(char *host, char *result, int latency) {
-    if (strcmp(host, result) != 0) {
-        fprintf(stdout, "Reply in %4ld ms from %16s  [%s]", latency, host, result);
+int ping_host(char *host, int timeout, int *latency) {
+    HANDLE hIcmpFile;
+    unsigned long ipaddr = INADDR_NONE;
+    DWORD dwRetVal = 0;
+    char SendData[32] = "Data Buffer";
+    LPVOID ReplyBuffer = NULL;
+    DWORD ReplySize = 0;
+
+    ipaddr = inet_addr(host);
+    
+    hIcmpFile = IcmpCreateFile();
+    if (hIcmpFile == INVALID_HANDLE_VALUE) {
+        if (DEBUG) {
+            fprintf(stderr, "\tUnable to open handle.\n");
+            fprintf(stderr, "IcmpCreatefile returned error: %ld\n", GetLastError());
+        }
+        return 1;
+    }    
+
+    ReplySize = sizeof(ICMP_ECHO_REPLY) + sizeof(SendData);
+    ReplyBuffer = (VOID*) malloc(ReplySize);
+    
+    dwRetVal = IcmpSendEcho(hIcmpFile, ipaddr, SendData, sizeof(SendData), 
+        NULL, ReplyBuffer, ReplySize, timeout);
+
+    int exit_code = 1;
+
+    if (dwRetVal) {
+        PICMP_ECHO_REPLY pEchoReply = (PICMP_ECHO_REPLY)ReplyBuffer;
+        struct in_addr ReplyAddr;
+        ReplyAddr.S_un.S_addr = pEchoReply->Address;
+
+        if (!strcmp(host, inet_ntoa( ReplyAddr ))) {
+            *latency = pEchoReply->RoundTripTime;
+            exit_code = 0;
+        }
+    }
+
+    free(ReplyBuffer);
+    return exit_code;
+}
+
+void display_ping(char *host, char *name, int latency) {
+    if (strlen(name) && strcmp(host, name)) {
+        fprintf(stdout, "%4ld ms %16s [%s]\n", latency, host, name);
     } else {
-        fprintf(stdout, "Reply in %4ld ms from %16s", latency, host);
+        fprintf(stdout, "%4ld ms %16s\n", latency, host);
     }
 
     /* Send Arp requests */
@@ -227,10 +226,9 @@ void display_ping_result(char *host, char *result, int latency) {
     //if (!send_arp(mac, host)) {
     //    fprintf(stdout, "\tMAC: %s", mac);
     //}
-    fprintf(stdout, "\n");
 }
 
-int ping_scan(char *cidr, int timeout) {
+int ping_scan(char *cidr, int timeout, bool dig) {
     WSADATA wsaData;
     int iResult;
     
@@ -249,7 +247,7 @@ int ping_scan(char *cidr, int timeout) {
         return 1;
     }
 
-    unsigned long long ip = inet_addr(dotted_ip);
+    unsigned long ip =  inet_addr(dotted_ip);
     char *network_bits = strtok(NULL, "/\\");
 
     if (network_bits == NULL) {
@@ -260,9 +258,10 @@ int ping_scan(char *cidr, int timeout) {
 
         /* Print result */
         if (!ping_host(host, timeout, &latency)) {
-            char result[NI_MAXHOST];
-            reverse_dns_lookup(result, host);
-            display_ping_result(host, result, latency);
+            char name[NI_MAXHOST];
+            memset(name, '\0' , NI_MAXHOST);
+            if (dig) reverse_dns_lookup(name, host);
+            display_ping(host, name, latency);
         }
 
     } else {
@@ -272,19 +271,17 @@ int ping_scan(char *cidr, int timeout) {
             fprintf(stderr, "Invalid CIDR notation.\n");
             return 1;
         }
-        unsigned long subnet_mask = (0xFFFFFFFF >> host_bits);
+
+        unsigned long subnet_mask = host_bits == 32 ? 0 : htonl((0xFFFFFFFF << host_bits));
         unsigned long network = ip & subnet_mask;
 
-        if (DEBUG) {
-            char subnet_mask_str[NI_MAXHOST];
-            char network_str[NI_MAXHOST];
-            long_to_dotted_ipv4(subnet_mask_str, subnet_mask);
-            long_to_dotted_ipv4(network_str, network);
-            fprintf(stderr, "Network: %s\nSubnet Mask: %s\n", network_str, subnet_mask_str);
-        }
-
-        unsigned long long num_hosts =  pow(2, host_bits);
-        if (DEBUG) fprintf(stderr, "Addresses: %llu\n", num_hosts);
+        char subnet_mask_str[NI_MAXHOST];
+        char network_str[NI_MAXHOST];
+        long_to_dotted_ipv4(subnet_mask_str, subnet_mask);
+        long_to_dotted_ipv4(network_str, network);
+        unsigned long long num_hosts = (unsigned long long) 1 << host_bits; //pow(2, host_bits);
+        fprintf(stderr, "Network: %s\nSubnet mask: %s\n", network_str, subnet_mask_str);
+        fprintf(stderr, "--- %llu address sweep ---\n", num_hosts);
 
         /* The number of threads created is not guaranteed to be the number of threads requested */
         omp_set_num_threads(num_hosts);
@@ -292,21 +289,22 @@ int ping_scan(char *cidr, int timeout) {
         /* Multithreaded for-loop */
         #pragma omp parallel for ordered
         for (long long int i = 0; i < num_hosts; i++) {
-            
-            unsigned long long current = network | (i << (32 - host_bits)); 
-            char host[NI_MAXHOST];
-            long_to_dotted_ipv4(host, current);
-            int latency;
 
-            if (!ping_host(host, timeout, &latency)) {
-                /* Successful PING */
-                char name[NI_MAXHOST];
-                reverse_dns_lookup(name, host);
-                #pragma omp ordered 
-                {
-                    display_ping_result(host, name, latency);
+                unsigned long current = network + htonl(i);
+                char host[NI_MAXHOST];
+                long_to_dotted_ipv4(host, current);
+                int latency;
+
+                if (!ping_host(host, timeout, &latency)) {
+                    /* Successful PING */
+                    char name[NI_MAXHOST];
+                    memset(name, '\0' , NI_MAXHOST);
+                    if (dig) reverse_dns_lookup(name, host);
+                    #pragma omp ordered 
+                    {
+                        display_ping(host, name, latency);
+                    }
                 }
-            }
         }    
     }
     /* Cleanup */

@@ -4,6 +4,7 @@ For v1.04
 NEW OPTIONS:
 -a send arp requests (for class-c ip addresses only?)
 -w timeout (in milliseconds)
+-r (attempt reverse dns lookups)
 
 
 -- connect scans
@@ -15,3 +16,12 @@ NEW OPTIONS:
 -- Clean up the rest of the code
 -- get_pipes() might be better off passing in a pointer to a struct 
    so that it can return an error code instead
+
+BUGS:
+
+select is not blocking when polling both read and write sets (100% of 1 cpu core == busy looping)
+- Then again this might be expected behavior
+
+EASTER EGG:
+
+wc towel.blinkenlights.nl 23

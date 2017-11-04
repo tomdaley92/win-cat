@@ -8,11 +8,11 @@ Inspired by the traditional nc we all know and love.
 **[Downloads](https://github.com/tomdaley92/WinCat/releases)**
 
 ## Usage
-    wincat [-lkszh] [--e filename] [--c string] [host] [port]
+    wc [-lkszhv] [--e filename] [--c string] [host] [port]
     
     -l      Listen for incoming connections. It is an error to
             use this option with a host specified
-    -k      Keep listening. Forces wincat to stay listening 
+    -k      Keep listening. Forces wc to stay listening 
             for another connection after its current
             connection is completed. It is an error to use
             this option without -l.
@@ -20,28 +20,29 @@ Inspired by the traditional nc we all know and love.
     -s      Specify host(s) on the network to send ICMP echo
             requests. It is an error to use this option with
             any other options specified.
-            e.g.    wincat -s 192.168.1.0/24
+            e.g.    wc -s 192.168.1.0/24
 
     -z      Specify port(s) on the host to scan for listening
             daemons using the connect() call. It is an error
             to use this option with any other options
             specified.
-            e.g.    wincat -z localhost 1-200
+            e.g.    wc -z localhost 1-200
 
     --c     Specify commands to pass to "cmd /c" for
             execution. It is an error to use this option
             with --e, -s, or -z.
-            e.g.    host A (10.0.0.2): wincat -l --c whoami 8118
-                    host B (10.0.0.3): wincat 10.0.0.2 8118
+            e.g.    host A (10.0.0.2): wc -l --c whoami 8118
+                    host B (10.0.0.3): wc 10.0.0.2 8118
 
     --e     Specify filename to execute after connect
             (use with caution). It is an error to use this
             option with --c, -s, or -z.
-            e.g.    host A (10.0.0.2): wincat -lk --e cmd 8118
-                    host B (10.0.0.3): wincat 10.0.0.2 8118
+            e.g.    host A (10.0.0.2): wc -lk --e cmd 8118
+                    host B (10.0.0.3): wc 10.0.0.2 8118
 
-    -h      Displays this help page, when this option
-            is specified.
+    -h      Print this help page.
+
+    -v      Display version information.
 
     host    Can be a numerical address or a symbolic
             hostname. If the -s option is specified, CIDR

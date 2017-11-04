@@ -8,7 +8,7 @@
 # 1) vcvarsall x86
 # 2) nmake
 
-APPNAME = WinCat
+APPNAME = wc
 
 CONSOLE_APP = /SUBSYSTEM:CONSOLE
 GUI_APP = /SUBSYSTEM:WINDOWS
@@ -37,8 +37,8 @@ build: objects
 	MOVE $(APPNAME).exe bin/$(APPNAME).exe
 
 # Build object files
-objects:	src/*.c* src/*.h
-	$(CC) $(CFLAGS) /c $(INCS) $(CFLAGS) src/*.cc	
+objects:	src/*.c*
+	$(CC) $(CFLAGS) /c $(INCS) $(CFLAGS) $?	
 
 # Clean any leftover build files and executables
 clean:

@@ -14,7 +14,6 @@ wincat.h
 #include "pipes.h"
 
 class WinCat {
-    
     private:
         AsyncStreamReader *input = NULL;
         FILE *output;
@@ -31,4 +30,4 @@ class WinCat {
         
 };
 
-#endif
+#endif /* WINCAT_H */

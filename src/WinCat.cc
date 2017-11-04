@@ -40,6 +40,13 @@ int WinCat::Launch() {
         /* Create thread for non-blocking stdin reader */
         AsyncStreamReader *input = new AsyncStreamReader(stdin, reader);
         this->input = input;
+
+        /* Enable VT100 and similar control character sequences 
+           that control cursor movement, color/font mode, 
+           and other operations */
+        SetConsoleMode( GetStdHandle(STD_OUTPUT_HANDLE), 
+                        ENABLE_PROCESSED_OUTPUT | ENABLE_VIRTUAL_TERMINAL_PROCESSING); 
+
         this->output = stdout;
 
     } else {
@@ -84,7 +91,6 @@ int WinCat::Process(SOCKET ClientSocket) {
     
     /* Main run-forever loop: */
     for(;;) {
-
         FD_ZERO(&readfds);
         FD_ZERO(&writefds);
         FD_ZERO(&exceptfds);
@@ -92,22 +98,25 @@ int WinCat::Process(SOCKET ClientSocket) {
         FD_SET(ClientSocket, &readfds);
         FD_SET(ClientSocket, &writefds);
         FD_SET(ClientSocket, &exceptfds);
+
+        //struct timeval s_timeout; 
+        //s_timeout.tv_sec = 1;
+        //s_timeout.tv_usec = 0;
        
         /* Pass NULL for timeout for blocking calls */
-        int rs = select(3, &readfds, &writefds, &exceptfds, NULL);
+        // Setting the write-set to NULL fixes the issue where this function never blocks (High CPU usage)...
+        int rs = select(1, &readfds, &writefds, &exceptfds, NULL);
         if (rs == SOCKET_ERROR) {
             if (DEBUG) fprintf(stderr, "Wincat: Select() failed with error: %d\n", WSAGetLastError());
             break;
-        }       
+        }
 
         if (FD_ISSET(ClientSocket, &readfds)) {
             /* SOCKET IS READY FOR READING */
             iResult = recv(ClientSocket, recvbuf, DEFAULT_BUFLEN, 0);
             if ( iResult > 0 ) {
-                
                 fwrite(recvbuf, 1, iResult, output);
                 fflush(output);
-
             } else if ( iResult == 0 ) {
                 if (DEBUG) fprintf(stderr, "Wincat: Connection closed on other end.\n");
                 break;
@@ -115,18 +124,13 @@ int WinCat::Process(SOCKET ClientSocket) {
                 if (DEBUG) fprintf(stderr, "Wincat: Recv() failed with error: %d\n", WSAGetLastError());
                 break;
             }
-
             memset(recvbuf, '\0', DEFAULT_BUFLEN);
 
         } else if (FD_ISSET(ClientSocket, &writefds)) {
             /* SOCKET IS READY FOR WRITING */
-            int bytes_read;
-            bytes_read = this->input->Read(sendbuf);
-
+            int bytes_read = this->input->Read(sendbuf);
             if (bytes_read > 0) {
-
                 iResult = send(ClientSocket, sendbuf, bytes_read, 0);
-
                 if ( iResult == 0 ) {
                     if (DEBUG) fprintf(stderr, "Wincat: Connection closed on other end.\n");
                     break;
@@ -138,7 +142,6 @@ int WinCat::Process(SOCKET ClientSocket) {
                 if (DEBUG) fprintf(stderr, "Wincat: Input reading complete.\n");
                 break;
             }
-
             memset(sendbuf, '\0', DEFAULT_BUFLEN);
 
         } else if (FD_ISSET(ClientSocket, &exceptfds)) {
