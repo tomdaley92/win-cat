@@ -42,7 +42,7 @@ Inspired by the traditional nc we all know and love.
 
     -h      Print this help page.
 
-    -v      Display version information.
+    -v      Print version information.
 
     host    Can be a numerical address or a symbolic
             hostname. If the -s option is specified, CIDR
