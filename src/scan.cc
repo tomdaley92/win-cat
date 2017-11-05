@@ -77,7 +77,6 @@ int long_to_dotted_ipv4(char *dest, unsigned long ip_addr) {
     b = (ip_addr >> 16) & 0xFF;
     a = (ip_addr >> 24) & 0xFF;
 
-    //fprintf(stderr, "%lu = (%d.%d.%d.%d)\n", ip_addr, a, b, c, d);
     sprintf(dest, "%d.%d.%d.%d", a, b, c, d);
     return 0;
 }
@@ -283,7 +282,8 @@ int ping_scan(char *cidr, int timeout, bool dig) {
         fprintf(stderr, "Network: %s\nSubnet mask: %s\n", network_str, subnet_mask_str);
         fprintf(stderr, "--- %llu address sweep ---\n", num_hosts);
 
-        /* The number of threads created is not guaranteed to be the number of threads requested */
+        /* The number of threads created is not guaranteed 
+           to be the number of threads requested */
         omp_set_num_threads(num_hosts);
 
         /* Multithreaded for-loop */

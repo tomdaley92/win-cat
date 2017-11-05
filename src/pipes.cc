@@ -88,8 +88,7 @@ PipeHandles get_pipes(char *filename) {
         NULL,          // use parent's current directory 
         &siStartInfo,  // STARTUPINFO pointer 
         &pipes.piProcInfo);  // receives PROCESS_INFORMATION 
-
-    /* If an error occurs, exit the application */ 
+ 
     if ( !pipes.process_spawned ) {
         fprintf(stderr, "Unable to spawn child process.\n");   
     }
@@ -101,63 +100,15 @@ PipeHandles get_pipes(char *filename) {
 }
 
 int close_pipes(struct PipeHandles pipes) {
-    //if (!CancelIo(pipes.Child_Std_OUT_Rd)){
-        //if (DEBUG) fprintf(stderr, "Unable to cancel IO operations on child's STDOUT read handle.\n");
-    //}
-
-    //if (!CancelIo(pipes.Child_Std_IN_Wr)) {
-        //if (DEBUG) fprintf(stderr, "Unable to cancel IO operations on child's STDIN write handle.\n");
-    //}
-
-    /* Wait until child thread exits */
-    //if (pipes.piProcInfo.hThread != NULL) {
-        //if (DEBUG) fprintf(stderr, "Waiting on child thread\n");
-        
-       // WaitForSingleObject( pipes.piProcInfo.hThread, INFINITE);
-        //if (!TerminateThread(pipes.piProcInfo.hThread, 0)){
-            //if (DEBUG)fprintf(stderr, "Error: failed to terminate child thread.\n");
-        
-        //}
-        //CloseHandle(pipes.piProcInfo.hThread);
-    //}
-
-    /* Wait until child process exits */
-    //if (pipes.piProcInfo.hProcess != NULL) {
-        //if (DEBUG) fprintf(stderr, "Waiting on child process\n");
-        
-        //WaitForSingleObject( pipes.piProcInfo.hProcess, INFINITE );
-
-        //if (!TerminateProcess(pipes.piProcInfo.hProcess, 0)) {
-        //    if (DEBUG) fprintf(stderr, "Error: failed to terminate child process. %lu\n", GetLastError());
-        //}
-
-        //if (WaitForInputIdle(pipes.piProcInfo.hProcess, INFINITE)){
-        //    fprintf(stderr, "Unable to synchronize with child process.\n");
-        //}
-        //CloseHandle(pipes.piProcInfo.hProcess);
-    //}
-
     if (DEBUG) fprintf(stderr, "Pipes: Waiting for child process to exit.\n");
-
-    // Wait until child process exits.
     WaitForSingleObject( pipes.piProcInfo.hProcess, INFINITE );
 
     if (DEBUG) fprintf(stderr, "Pipes: Closing handles.\n");
-    // Close process and thread handles. 
     CloseHandle( pipes.piProcInfo.hProcess );
     CloseHandle( pipes.piProcInfo.hThread );
     
-    //if (pipes.Child_Std_IN_Rd != NULL) {
-        //CloseHandle(pipes.Child_Std_IN_Rd);
-    //}
-    if (pipes.Child_Std_IN_Wr != NULL) {
-        CloseHandle(pipes.Child_Std_IN_Wr);
-    }
-    //if (pipes.Child_Std_OUT_Rd != NULL) {
-        //CloseHandle(pipes.Child_Std_OUT_Rd);
-   // }
-    if (pipes.Child_Std_OUT_Wr != NULL) {
-        CloseHandle(pipes.Child_Std_OUT_Wr);
-    }
+    if (pipes.Child_Std_IN_Wr != NULL) CloseHandle(pipes.Child_Std_IN_Wr);
+    if (pipes.Child_Std_OUT_Wr != NULL) CloseHandle(pipes.Child_Std_OUT_Wr);
+    
     return 0;
 }

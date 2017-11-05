@@ -125,12 +125,7 @@ AsyncStreamReader::AsyncStreamReader(FILE *stream, int type) {
 AsyncStreamReader::~AsyncStreamReader() {
     /* We cannot guarantee which state the thread is in */
     if (data.key) ReleaseMutex(data.key);
-
-    if (T_HANDLE) {
-        //if (DEBUG) fprintf(stderr, "AsyncStreamReader: Waiting for thread to terminate.\n");
-        //WaitForSingleObject( T_HANDLE, INFINITE );
-        CloseHandle(T_HANDLE);
-    }  
+    if (T_HANDLE) CloseHandle(T_HANDLE);
 }
 
 int AsyncStreamReader::Read(char *dest) {
