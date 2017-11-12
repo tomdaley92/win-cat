@@ -5,10 +5,9 @@ For v1.04 - TODO
 
 NEW OPTIONS:
 -a send arp requests (for class-c ip addresses only?)
--w timeout (in milliseconds)
--r (attempt reverse dns lookups)
+-w for regular client connects? stdin timeouts?
 
--- write a connect() wrapper that takes in a timeout or somethind along those lines...
+-- write a connect() wrapper that takes in a timeout or something along those lines...
 -- connecting to clients should be allowed to use a port range
 
 -- get_pipes() might be better off passing in a pointer to a struct 

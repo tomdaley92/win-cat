@@ -227,7 +227,7 @@ void display_ping(char *host, char *name, int latency) {
     //}
 }
 
-int ping_scan(char *cidr, int timeout, bool dig) {
+int ping_scan(char *cidr, int timeout, int do_reverse_dns) {
     WSADATA wsaData;
     int iResult;
     
@@ -259,7 +259,7 @@ int ping_scan(char *cidr, int timeout, bool dig) {
         if (!ping_host(host, timeout, &latency)) {
             char name[NI_MAXHOST];
             memset(name, '\0' , NI_MAXHOST);
-            if (dig) reverse_dns_lookup(name, host);
+            if (do_reverse_dns) reverse_dns_lookup(name, host);
             display_ping(host, name, latency);
         }
 
@@ -299,7 +299,7 @@ int ping_scan(char *cidr, int timeout, bool dig) {
                     /* Successful PING */
                     char name[NI_MAXHOST];
                     memset(name, '\0' , NI_MAXHOST);
-                    if (dig) reverse_dns_lookup(name, host);
+                    if (do_reverse_dns) reverse_dns_lookup(name, host);
                     #pragma omp ordered 
                     {
                         display_ping(host, name, latency);

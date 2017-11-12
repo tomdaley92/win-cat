@@ -2,7 +2,7 @@
 
 Thomas Daley
 10/26/2016
-pipe.cc
+pipes.cc
 
 */
 #include <windows.h>

@@ -29,6 +29,6 @@ int connect_scan(char *host,
 
 int ping_scan(char *cidr, 
               int timeout,
-              bool dig);
+              int do_reverse_dns);
 
 #endif /* SCAN_H */

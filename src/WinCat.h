@@ -2,7 +2,7 @@
 
 Thomas Daley
 11/13/2016
-wincat.h
+WinCat.h
 
 */
 #ifndef WINCAT_H

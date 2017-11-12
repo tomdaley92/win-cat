@@ -2,7 +2,7 @@
 
 Thomas Daley
 11/13/2016
-wincat.cc
+WinCat.cc
 
 */
 #include "wincat.h"
