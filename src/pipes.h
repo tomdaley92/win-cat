@@ -2,7 +2,7 @@
 
 Thomas Daley
 10/26/2016
-pipe.h
+pipes.h
 
 */
 #ifndef PIPES_H
