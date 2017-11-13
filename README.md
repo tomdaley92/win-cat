@@ -26,7 +26,7 @@ Inspired by the traditional nc we all know and love.
                   timeout is 750 milliseconds.
                   e.g.    wc -z localhost 1-200
 
-    r             Do a reverse dns lookup with ICMP echo requests. 
+    r             Do a reverse DNS lookup with ICMP echo requests. 
                   e.g.    wc -sr 10.0.0.0/24
 
     w timeout     The timeout in milliseconds for pings and connect
