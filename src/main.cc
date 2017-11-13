@@ -19,14 +19,14 @@ WinCat - A minimal windows implementation of the netcat tool.
 #include <tchar.h>
 
 #define DEBUG 0
-#define MAX_LINE 1025
+#define MAX_LINE 2048
 
 const char *version = "WinCat - v1.04\n";
 
 const char *about = "A simple TCP/IP network debugging utility for Windows.\n"
                     "Inspired by the traditional nc we all know and love.\n";
 
-const char *usage = "usage: wc [-lkszrwhvec] [host] [port]\n";
+const char *usage = "usage: wc [-lkszrwechv] [host] [port]\n";
 
 const char *details =
                     "   l              Listen for incoming connections. It is an error to\n"
@@ -43,7 +43,7 @@ const char *details =
                     "\n"
                     "   z              Specify port(s) on the host to scan for listening\n"
                     "                  daemons using the connect() call. The default\n"
-                    "                  timeout is 750 milliseconds."
+                    "                  timeout is 750 milliseconds.\n"
                     "                  e.g.    wc -z localhost 1-200\n"
                     "\n"
                     "   r              Do a reverse dns lookup with ICMP echo requests.\n"
@@ -53,16 +53,17 @@ const char *details =
                     "                  scans.\n"
                     "                  e.g.    wc -zw 100 localhost 1-200\n"
                     "\n"
+                    "   e  filename    Specify a filename to execute after connecting\n"
+                    "                  (use with caution). See -c for enhanced\n" 
+                    "                  functionality. It is an error to use this option\n" 
+                    "                  with -c, -s, or -z.\n"
+                    "                  e.g.    host A (10.0.0.2): wc -lk -e \"cmd\" 8118\n"
+                    "                          host B (10.0.0.3): wc 10.0.0.2 8118\n"
+                    "\n"
                     "   c  command     Specify a command to pass to \"cmd /c\" for\n"
                     "                  execution after connecting. It is an error\n"
                     "                  to use this option with -e, -s, or -z.\n"
-                    "                  e.g.    host A (10.0.0.2): wc -l -c whoami 8118\n"
-                    "                          host B (10.0.0.3): wc 10.0.0.2 8118\n"
-                    "\n"
-                    "   e  filename    Specify a filename to execute after connecting\n"
-                    "                  (use with caution). It is an error to use this\n"
-                    "                  option with -c, -s, or -z.\n"
-                    "                  e.g.    host A (10.0.0.2): wc -lk -e cmd 8118\n"
+                    "                  e.g.    host A (10.0.0.2): wc -l -c \"dir\" 8118\n"
                     "                          host B (10.0.0.3): wc 10.0.0.2 8118\n"
                     "\n"
                     "   h              Print this help page.\n"
@@ -101,18 +102,19 @@ int main(int argc, char **argv) {
         switch(opt) {
             case 'l':
                 {   
+                    if (opt_count('s') || opt_count('z')) return print_usage();
                     if (opt_count('e') && opt_count('c')) return print_usage();
 
                     argind += opt_arg('e')? 1 : 0;
                     argind += opt_arg('c')? 1 : 0;
 
-                    if (argind >= argc) return print_usage();
+                    if (argind+1 != argc) return print_usage();
 
                     if (DEBUG) {
                         if (opt_count('k')) fprintf(stderr, "-k\n");
                         if (opt_count('e')) fprintf(stderr, "-e %s\n", opt_arg('e'));
                         if (opt_count('c')) fprintf(stderr, "-c %s\n", opt_arg('c'));
-                        fprintf(stderr, "port %s\n", argv[argind]);
+                        fprintf(stderr, "port: %s\n", argv[argind]);
                     }
 
                     if (opt_count('e')) {
@@ -120,7 +122,7 @@ int main(int argc, char **argv) {
                     } 
 
                     if (opt_count('c')) {
-                        char command[MAX_LINE] = {0};
+                        char command[MAX_LINE+1] = {0};
                         memcpy(command, "cmd /c ", 7);
                         memcpy(command+7, opt_arg('c'), strlen(opt_arg('c')));
                         return server(argv[argind], command, opt_count('k') ? 1 : 0);
@@ -130,23 +132,25 @@ int main(int argc, char **argv) {
                 }
             case 's':
                 {
+                    if (opt_count('w') && !opt_arg('w')) return print_usage();
+
                     argind += opt_arg('w')? 1 : 0;
 
-                    if (opt_arg('r')) {
-                        if (strcmp(opt_arg('r') ? opt_arg('r') : "", opt_arg('w') ? opt_arg('w') : "")) argind--;
+                    if (opt_arg('s') && opt_arg('r')) {
+                        if (strcmp(opt_arg('r'), opt_arg('s'))) argind--;
                     }
-                    if (opt_arg('w')) {
-                        if (strcmp(opt_arg('w') ? opt_arg('w') : "", opt_arg('s') ? opt_arg('s') : "")) argind--;
+                    if (opt_arg('s') && opt_arg('w')) {
+                        if (strcmp(opt_arg('w'), opt_arg('s'))) argind--;
                     }
+
+                    if (argind+1 != argc) return print_usage();
 
                     if (DEBUG) {
                         if (opt_count('s')) fprintf(stderr, "-s\n");
                         if (opt_count('r')) fprintf(stderr, "-r\n");
                         if (opt_arg('w')) fprintf(stderr, "-w arg: %s\n", opt_arg('w'));
-                        if (argind < argc) fprintf(stderr, "cidr: %s\n", argv[argind]);
+                        fprintf(stderr, "cidr: %s\n", argv[argind]);
                     }
-
-                    if (argind >= argc) return print_usage();
 
                     return ping_scan(argv[argind], opt_arg('w') ? atoi(opt_arg('w')) : 900, opt_count('r') ? 1: 0);
                 }
@@ -166,7 +170,7 @@ int main(int argc, char **argv) {
                         if (argind < argc-1) fprintf(stderr, "host: %s\nport: %s\n", argv[argind], argv[argind+1]);
                     }
 
-                    if (argind >= argc-1) return print_usage();
+                    if (argind+2 != argc) return print_usage();
 
                     int low;
                     int high;
@@ -185,19 +189,18 @@ int main(int argc, char **argv) {
             case 'c':
                 {
                     if (opt_count('e') || opt_count('z') || opt_count('s')) return print_usage();
-                    
                     if (!opt_count('l')) {
                         
                         if (opt_arg('c')) argind++;
 
-                        if (argind >= argc-1) return print_usage();
+                        if (argind+2 != argc) return print_usage();
 
                         if (DEBUG) {
                             fprintf(stderr, "-c arg: %s\n", opt_arg('c'));
                             fprintf(stderr, "host: %s\nport: %s\n", argv[argind], argv[argind+1]);
                         }
 
-                        char command[MAX_LINE] = {0};
+                        char command[MAX_LINE+1] = {0};
                         memcpy(command, "cmd /c ", 7);
                         memcpy(command+7, opt_arg('c'), strlen(opt_arg('c')));
                         return client(argv[argind], argv[argind+1], command);
@@ -208,12 +211,11 @@ int main(int argc, char **argv) {
             case 'e':
                 {
                     if (opt_count('c') || opt_count('z') || opt_count('s')) return print_usage();
-                    
                     if (!opt_count('l')) {
                         
                         if (opt_arg('e')) argind++;
 
-                        if (argind >= argc-1) return print_usage();
+                        if (argind+2 != argc) return print_usage();
 
                         if (DEBUG) {
                             fprintf(stderr, "-e arg: %s\n", opt_arg('e'));
@@ -230,12 +232,8 @@ int main(int argc, char **argv) {
         }
     }
 
-    /* No options specified */
+    /* No options specified - client connect */
     if (argind >= argc-1) return print_usage();
     if (DEBUG) fprintf(stderr, "host: %s\nport: %s\n", argv[argind], argv[argind+1]);
     return client(argv[argind], argv[argind+1], NULL);
-
-    if (DEBUG) fprintf(stderr, "ExitProcess()\n");
-    
-    return 0;
 }
